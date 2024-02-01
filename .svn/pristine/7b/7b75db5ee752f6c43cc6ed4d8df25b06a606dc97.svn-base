@@ -1,0 +1,23 @@
+package kr.or.dduk.vo;
+
+import java.util.Date;
+import java.util.List;
+
+import lombok.Data;
+
+@Data
+public class AdmissionChartVO {
+	private String admiNo;	//입원번호
+	private String adrmRoomNo;	//호수
+	private String adrmBedNo;	//병상번호
+	private String paNo;		//환자번호
+	private String empNo;		//사번(담당의)
+	private Date admiIndt;	//입원날짜
+	private Date admiExpOutdt; //퇴원예상날짜
+	private Date admiOutDt;	//실제퇴원일
+	private String admiFile;	//입원동의서
+	private String clinicNo;	
+	private String admiReason;	//입원사유
+	
+	List<ClinicChartVO> clinicChartVOList;	// 입원차트 리스트
+}

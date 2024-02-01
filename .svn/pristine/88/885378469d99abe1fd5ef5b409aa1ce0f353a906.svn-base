@@ -1,0 +1,16 @@
+package kr.or.dduk.vo;
+
+import lombok.Data;
+
+@Data
+public class TestOrderVO {
+	private String testCd;		// 검사코드
+	private String clinicNo;	// 진료번호
+	private String teodRst;		// 검사결과
+	private int teodTurn;		// 검사순번
+	private String atchFileCd;	// 영상검사결과(첨부파일코드)
+	private String testOrderBodyCd;		// 환부코드(공통상세코드)
+	private String empNo;		// 검사자(간호사사번)
+	
+	private TestVO testVO;		// 검사코드VO
+}

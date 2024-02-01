@@ -1,0 +1,30 @@
+package kr.or.dduk.employee.service;
+
+import java.util.List;
+
+import kr.or.dduk.vo.EmployeeVO;
+
+public interface EmployeeService {
+
+	// 회원 등록
+	public int create(EmployeeVO employeeVO);
+
+	// 회원 조회
+	public EmployeeVO detail(String empNo);
+
+	// 회원 수정
+	public int update(EmployeeVO employeeVO);
+
+	// 마지막 사번 조회
+	public String getNewNo();
+
+	// 의사 리스트 가져오기
+	public List<EmployeeVO> getDoctorList();
+
+	
+	// 일정 권한 체크
+	public EmployeeVO authCheck(String empNo);
+
+	// 인사과 회원관리 - 사원 목록 가져오기
+	public List<EmployeeVO> getAllEmp();
+}

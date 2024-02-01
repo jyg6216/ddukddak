@@ -1,0 +1,102 @@
+package kr.or.dduk.employee.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import kr.or.dduk.employee.service.EmployeeService;
+import kr.or.dduk.mapper.EmployeeMapper;
+import kr.or.dduk.vo.ComDetailCodeInfoVO;
+import kr.or.dduk.vo.DocOfficeVO;
+import kr.or.dduk.vo.DocScheduleVO;
+import kr.or.dduk.vo.EmployeeVO;
+
+@Service
+public class EmployeeServiceImpl implements EmployeeService {
+	
+	@Autowired
+	EmployeeMapper employeeMapper;
+
+	@Override
+	public int create(EmployeeVO employeeVO) {
+		return this.employeeMapper.create(employeeVO);
+	}
+
+	@Override
+	public EmployeeVO detail(String empNo) {
+		return this.employeeMapper.detail(empNo);
+	}
+
+	@Override
+	public int update(EmployeeVO employeeVO) {
+		return this.employeeMapper.update(employeeVO);
+	}
+
+	@Override
+	public String getNewNo() {
+		return this.employeeMapper.getNewNo();
+	}
+
+	@Override
+	public List<EmployeeVO> getDoctorList() {
+		return this.employeeMapper.getDoctorList();
+	}
+
+	@Override
+	public EmployeeVO authCheck(String empNo) {
+		return this.employeeMapper.getMemberAuth(empNo);
+	}
+
+	@Override
+	public List<EmployeeVO> getAllEmp() {
+		return this.employeeMapper.getAllEmp();
+	}
+	
+	@Override
+	public List<EmployeeVO> getPermEmpList() {
+		return this.employeeMapper.getPermEmpList();
+	}
+
+	@Override
+	public EmployeeVO getHrdDetail(String empNo) {
+		return this.employeeMapper.getHrdDetail(empNo);
+	}
+
+	@Override
+	public List<EmployeeVO> getSttDetail(String empAcntState) {
+		return this.employeeMapper.getSttDetail(empAcntState);
+	}
+
+	@Override
+	public int updateStt(EmployeeVO employeeVO) {
+		return this.employeeMapper.updateStt(employeeVO);
+	}
+
+	@Override
+	public List<EmployeeVO> getFirstApprovalHolder() {
+		return this.employeeMapper.getFirstApprovalHolder();
+	}
+
+	@Override
+	public List<EmployeeVO> getSecondApprovalHolder() {
+		return this.employeeMapper.getSecondApprovalHolder();
+	}
+
+	@Override
+	public List<EmployeeVO> getAllDoctorDetail() {
+		return this.employeeMapper.getAllDoctorDetail();
+	}
+
+	@Override
+	public DocScheduleVO getPresentSchedule(String empNo) {
+		return this.employeeMapper.getPresentSchedule(empNo);
+	}
+
+	@Override
+	public int assignDoctorToClinicRoom(DocOfficeVO docOfficeVO) {
+		return this.employeeMapper.assignDoctorToClinicRoom(docOfficeVO);
+	}
+
+
+}

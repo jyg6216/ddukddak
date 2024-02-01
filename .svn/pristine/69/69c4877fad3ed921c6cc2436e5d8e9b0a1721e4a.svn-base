@@ -1,0 +1,9 @@
+package kr.or.dduk.vo;
+
+import lombok.Data;
+
+@Data
+public class DataWrapper {
+	public ClinicChartVO clinicChartVO;
+	public AdmissionChartVO admissionChartVO;
+}

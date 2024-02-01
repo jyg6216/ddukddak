@@ -1,0 +1,13 @@
+package kr.or.dduk.vo;
+
+import java.util.Date;
+
+import lombok.Data;
+
+@Data
+public class DocOfficeVO {
+	private String doNo;	//진료실 번호
+	private String empNo;	//진료중인 의사 사번
+	private Date doStdt;	//사용시작일
+	private Date doEddt;	//사용종료일
+}

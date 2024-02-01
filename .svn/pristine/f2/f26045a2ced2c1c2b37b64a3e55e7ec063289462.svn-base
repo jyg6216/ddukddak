@@ -1,0 +1,88 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<script type="text/javascript" src="/resources/js/jquery.min.js"></script>
+<style>
+/* 1592 */
+.left-div{
+	width: 392px;
+}
+.right-div{
+	width: 1184px;
+}
+.order{
+	font-size: 1.5em;
+	background-color: fuchsia;
+}
+.inventory{
+	font-size: 1.5em;
+	background-color: lime;
+}
+.search{
+	background-image: url(/resources/images/Search.png);
+	background-repeat: no-repeat;
+	background-position: 372px center;
+	width: 412px;
+	height: 48px;
+	margin-left: 18px;
+}
+</style>
+</head>
+<body>
+		<div class="dduk-body-border left-div">
+			<h1>발주서</h1>
+			 <div class="card-body table-responsive p-0" style="height: 320px;">
+	            <table class="table table-head-fixed text-nowrap">
+					<thead style="position:sticky; top: 0;  background-color: #fff;">
+						<tr class="tr-padding">
+							<th><input type="checkbox" id="check-all-patient"/> 전체</th>
+							<th>이름</th>
+							<th>예약날짜</th>
+							<th>예약시간</th>
+							<th>전화번호</th>
+						</tr>
+					</thead>
+					
+					<tbody>
+						<tr>
+							<td>발</td>
+							<td>주</td>
+							<td>다</td>
+							<td>ㅎ</td>
+							<td>ㅎ</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	
+		<div class="dduk-body-border right-div">
+			<div class="dduk-row">
+				<div class="order">발주현황</div>
+				<div class="inventory">재고현황</div>
+				<input class="dduck-input" type="text"  class="dduck-input search" id="search"/>검색버튼이나 아이콘
+			</div>
+			<div class="card-body table-responsive p-0" style="height: 320px;">
+	            <table class="table table-head-fixed text-nowrap">
+					<thead style="position:sticky; top: 0;  background-color: #fff;">
+						<tr class="tr-padding">
+							<th><input type="checkbox" id="check-all-patient"/> 전체</th>
+							<th>이름</th>
+							<th>예약날짜</th>
+							<th>예약시간</th>
+							<th>전화번호</th>
+						</tr>
+					</thead>
+					
+					<tbody>
+						<tr>
+							<td>발</td>
+							<td>주</td>
+							<td>다</td>
+							<td>ㅎ</td>
+							<td>ㅎ</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+</body>

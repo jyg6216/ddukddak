@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.dduk.mapper.ClinicChartMapper">
+
+	<select id="simpleClinicChartList" resultMap="patientMap">
+		SELECT 
+    		P.PA_NO,
+    		P.PA_REG,
+    		P.PA_NAME,
+    		P.PA_SEX,
+    		P.PA_BLD_TYPE,
+    		P.PA_HEIGHT,
+    		P.PA_WEIGHT,
+    		C.CLINIC_NO,
+   			C.CLINIC_DT,
+    		C.EMP_NO,
+    		E.EMP_NAME,
+    		ID.IJ_CD,
+    		MO.MEDI_CD,
+    		TOC.TEST_CD,
+    		TROC.TM_CD
+		FROM PATIENT P
+		LEFT JOIN CLINIC_CHART C ON P.PA_NO = C.PA_NO
+		LEFT JOIN INJURY_DIAGNOSIS ID ON C.CLINIC_NO = ID.CLINIC_NO
+		LEFT JOIN MEDICINE_ORDER MO ON C.CLINIC_NO = MO.CLINIC_NO
+		LEFT JOIN TEST_ORDER TOC ON C.CLINIC_NO = TOC.CLINIC_NO
+		LEFT JOIN TREATMENT_ORDER TROC ON C.CLINIC_NO = TROC.CLINIC_NO
+		LEFT JOIN EMPLOYEE E ON C.EMP_NO = E.EMP_NO 
+		WHERE P.PA_NO = #{paNo}
+		ORDER BY C.CLINIC_NO ASC
+	</select>
+	
+	<select id="clinicChartDetail" resultMap="clinicChartMap">
+		SELECT
+			C.CLINIC_NO,
+			C.CLINIC_DT,
+			C.CLINIC_OPINION,
+			C.HSRP_NO,
+			C.EMP_NO AS CLINIC_EMP_NO,
+			C.PA_NO,
+			C.CLINIC_INJNM,
+			C.ADMI_CD,
+			C.CLINIC_STATE,
+			ID.IJ_CD,
+			ID.INDI_TYPE,
+			ID.INDI_DT,
+			ID.BODY_CD AS INJURY_BODY_CD,
+            IJ.IJ_NM,
+            IJ.IJ_ENM,
+            TM.TM_NM,
+            TM.INSU_YN,
+			MO.MDOD_DAY,
+			MO.MDOD_PER,
+			MO.MDOD_DOSE,
+			M.MEDI_CD,
+			M.MEDI_TYPE,
+			M.MEDI_NM,
+			M.MEDI_STOCK,
+			M.MEDI_MAKER,
+			M.MEDI_DETAIL,
+			M.MEDI_CONT,
+			M.MEDI_PRICE,
+			M.INSU_YN AS MEDICINE_INSU_YN,
+			TOC.TEOD_RST,
+			TOC.TEOD_TURN,
+			TOC.ATCH_FILE_CD,
+			T.TEST_CD,
+			T.TEST_NM,
+			T.TEST_PRICE,
+			TOC.BODY_CD AS TEST_ORDER_BODY_CD,
+			TOC.EMP_NO AS TEST_ORDER_EMP_NO,
+			TROC.TROD_CONT,
+			TROC.EMP_NO AS TREATMENT_ORDER_EMP_NO
+		FROM CLINIC_CHART C
+		JOIN INJURY_DIAGNOSIS ID ON C.CLINIC_NO = ID.CLINIC_NO
+        JOIN INJURY IJ ON ID.IJ_CD = IJ.IJ_CD
+        JOIN TREATMENT_ORDER TRO ON C.CLINIC_NO = TRO.CLINIC_NO
+		JOIN MEDICINE_ORDER MO ON C.CLINIC_NO = MO.CLINIC_NO
+		JOIN MEDICINE M ON MO.MEDI_CD = M.MEDI_CD
+		JOIN TEST_ORDER TOC ON C.CLINIC_NO = TOC.CLINIC_NO
+		JOIN TEST T ON TOC.TEST_CD = T.TEST_CD
+		JOIN TREATMENT_ORDER TROC ON C.CLINIC_NO = TROC.CLINIC_NO
+        JOIN TREATMENT TM ON TROC.TM_CD = TM.TM_CD
+		WHERE C.CLINIC_NO = #{clinicNo}
+	</select>
+
+	<!-- 환자정보 resultMap -->
+	<resultMap type="patientVO" id="patientMap">
+		<result property="paNo" column="PA_NO"/>
+		<result property="paReg" column="PA_REG"/>
+		<result property="paName" column="PA_NAME"/>
+		<result property="paSex" column="PA_SEX"/>
+		<result property="paPh" column="PA_PH"/>
+		<result property="paAdd1" column="PA_ADD1"/>
+		<result property="paAdd2" column="PA_ADD2"/>
+		<result property="pzZip" column="PZ_ZIP"/>
+		<result property="paNoknm" column="PA_NOKNM"/>
+		<result property="paNokph" column="PA_NOKPH"/>
+		<result property="paBldType" column="PA_BLD_TYPE"/>
+		<result property="paInsrYn" column="PA_INSR_YN"/>
+		<result property="paAdmDt" column="PA_ADM_DT"/>
+		<result property="paHeight" column="PA_HEIGHT"/>
+		<result property="paWeight" column="PA_WEIGHT"/>
+		
+		<collection property="clinicChartVOList" resultMap="clinicChartMap"></collection>
+	</resultMap>
+	
+	<!-- 진료,회진차트 resultMap -->
+	<resultMap type="clinicChartVO" id="clinicChartMap">
+		<result property="clinicNo" column="CLINIC_NO" />
+		<result property="clinicDt" column="CLINIC_DT" />
+		<result property="clinicOpinion" column="CLINIC_OPINION" />
+		<result property="hsrpNo" column="HSRP_NO" />
+		<result property="empNo" column="EMP_NO" />
+		<result property="paNo" column="PA_NO" />
+		<result property="clinicInjnm" column="CLINIC_INJNM" />
+		<result property="admiCd" column="ADMI_CD" />
+		<result property="clinicState" column="CLINIC_STATE" />
+		<result property="empName" column="EMP_NAME" />
+
+		<collection property="injuryDiagnosisVOList"
+			resultMap="injuryDiagnosisMap" />
+		<collection property="testOrderVOList"
+			resultMap="testOrderMap" />
+		<collection property="medicineOrderVOList"
+			resultMap="medicineOrderMap" />
+		<collection property="treatmentOrderVOList"
+			resultMap="treatmentOrderMap" />
+	</resultMap>
+
+	<!-- 상병진단 resultMap -->
+	<resultMap type="injuryDiagnosisVO" id="injuryDiagnosisMap">
+		<result property="ijCd" column="IJ_CD" />
+		<result property="clinicNo" column="CLINIC_NO" />
+		<result property="indiType" column="INDI_TYPE" />
+		<result property="indiDt" column="INDI_DT" />
+		<result property="injuryBodyCd" column="INJURY_BODY_CD" />
+
+		<association property="injuryVO" resultMap="injuryMap" />
+	</resultMap>
+
+	<!-- 상병코드 resultMap -->
+	<resultMap type="injuryVO" id="injuryMap">
+		<result property="ijCd" column="IJ_CD" />
+		<result property="ijNm" column="IJ_NM" />
+		<result property="ijEnm" column="IJ_ENM" />
+	</resultMap>
+
+	<!-- 검사오더 resultMap -->
+	<resultMap type="testOrderVO" id="testOrderMap">
+		<result property="testCd" column="TEST_CD" />
+		<result property="clinicNo" column="CLINIC_NO" />
+		<result property="teodRst" column="TEOD_RST" />
+		<result property="teodTurn" column="TEOD_TURN" />
+		<result property="atchFileCd" column="ATCH_FILE_CD" />
+		<result property="testOrderBodyCd" column="TEST_ORDER_BODY_CD" />
+		<result property="empNo" column="EMP_NO" />
+
+		<association property="testVO" resultMap="testMap" />
+	</resultMap>
+
+	<!-- 검사코드 resultMap -->
+	<resultMap type="testVO" id="testMap">
+		<result property="testCd" column="TEST_CD" />
+		<result property="testNm" column="TEST_NM" />
+		<result property="testPrice" column="TEST_PRICE" />
+	</resultMap>
+
+	<!-- 처방오더 resultMap -->
+	<resultMap type="medicineOrderVO" id="medicineOrderMap">
+		<result property="mediCd" column="MEDI_CD" />
+		<result property="clinicNo" column="CLINIC_NO" />
+		<result property="mdodDay" column="MDOD_DAY" />
+		<result property="mdodPer" column="MDOD_PER" />
+		<result property="mdodDose" column="MDOD_DOSE" />
+		<result property="bodyCd" column="BODY_CD" />
+
+		<association property="medicineVO" resultMap="medicineMap" />
+	</resultMap>
+
+	<!-- 약품코드 resultMap -->
+	<resultMap type="medicineVO" id="medicineMap">
+		<result property="mediCd" column="MEDI_CD" />
+		<result property="mediType" column="MEDI_TYPE" />
+		<result property="mediNm" column="MEDI_NM" />
+		<result property="mediStock" column="MEDI_STOCK" />
+		<result property="mediMaker" column="MEDI_MAKER" />
+		<result property="mediDetail" column="MEDI_DETAIL" />
+		<result property="mediCont" column="MEDI_CONT" />
+		<result property="mediPrice" column="MEDI_PRICE" />
+		<result property="insuYn" column="INSU_YN" />
+	</resultMap>
+
+	<!-- 치료오더 resultMap -->
+	<resultMap type="treatmentOrderVO" id="treatmentOrderMap">
+		<result property="tmCd" column="TM_CD" />
+		<result property="clinicNo" column="CLINIC_NO" />
+		<result property="bodyCd" column="BODY_CD" />
+		<result property="trodCont" column="TROD_CONT" />
+		<result property="empNo" column="EMP_NO" />
+
+		<association property="treatmentVO"
+			resultMap="treatmentMap" />
+	</resultMap>
+
+	<!-- 치료코드 resultMap -->
+	<resultMap type="treatmentVO" id="treatmentMap">
+		<result property="tmCd" column="TM_CD" />
+		<result property="tmNm" column="TM_NM" />
+		<result property="tmPrice" column="TM_PRICE" />
+		<result property="insuYn" column="INSU_YN" />
+	</resultMap>
+</mapper>

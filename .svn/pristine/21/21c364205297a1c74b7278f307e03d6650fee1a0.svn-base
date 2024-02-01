@@ -1,0 +1,727 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags"%>
+
+<style>
+/* 닫기 버튼 스타일 */
+.close {
+	color: #aaa;
+	float: right;
+	width: 10%;
+	font-size: 28px;
+	font-weight: bold;
+}
+
+.close:hover, .close:focus {
+	color: black;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+/* 풀캘린더 스타일 */
+.cal {
+	width: 50%;
+	min-height: 500px;
+	margin: 20px 50px;
+}
+
+#calendar2 {
+	width: 500px;
+	margin-left: 20px;
+}
+
+.date-group {
+	display: inline-block;
+	margin-right : 30px;
+}
+
+</style>
+
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<!-- sweetalert -->
+<script src="/resources/fullcalendar-6.1.10/sweetalert2.min.js"></script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+<!-- 풀캘린더 -->
+<div id="calendar1" class="cal"></div>
+<div id="calendar2" class="cal"></div>
+
+<!-- 일정 추가 모달    -->
+<c:import url="../common/modal.jsp"></c:import>
+
+<script>
+// 날짜 선택 제한
+// 현재 날짜 불러와서 문자 형태 맞추기
+const date = new Date();
+const year = date.getFullYear();
+const month = ('0' + (date.getMonth() + 1)).slice(-2);
+const day = ('0' + (date.getDate())).slice(-2);
+const today = year+"-"+month+"-"+day;
+// 현재 날짜 이전으로는 선택 불가
+$("#eventStart").attr("min", today);
+$("#eventEnd").attr("min", today);
+// input값 가져오기
+let start = $("#eventStart").val();
+let startTime = $("#start").val();
+let end = $("#eventEnd").val();
+var endTime = $("#end").val();
+let content = $("#eventContent").val();
+let color = $("#color").val();
+// 종일 여부
+let isAllDay = $('input[name="allDay"]:checked').val();
+let dsCate = $("#color option:selected").text();
+// month 달력 특정
+let calendarEl = $("#calendar1")[0];
+let calendar1;
+// today 달력 특정
+let calendarE2 = $("#calendar2")[0];
+let calendar2;
+
+	document.addEventListener('DOMContentLoaded', function() {
+		calendar1 = new FullCalendar.Calendar(calendarEl, {
+			// 한국 언어, 시간 설정
+			locale : 'ko',
+			timeZone: 'Asia/Seoul',
+			// 화면에 맞게 높이 재설정
+			expandRows : true,
+			// 이벤트가 오버되면 높이 제한 (+ 몇 개식으로 표현)
+			dayMaxEvents: true,
+			// 초기 로드 될때 보이는 캘린더 화면(기본 설정: 달)
+			initialView : 'dayGridMonth',
+			// 날짜를 클릭하면
+			dateClick : function(info) {
+				// 의사나 원무과인지 확인
+				authCheck();
+				// 해당 날짜 시작으로 일정 추가하는 모달 뜨기
+				$(".schHead").text("일정 추가");
+				selectedStart = info.dateStr;
+				$("#eventStart").val(selectedStart);
+				$("#createSchModal").modal("show");
+			},
+			// 드래그해서 수정 가능
+			editable: true,
+			eventDrop: function(arg) {
+				// 의사나 원무과인지 확인
+				authCheck();
+				
+				Swal.fire({
+			    	title: '날짜를 수정하시겠습니까?',
+			    	text: '',
+			    	icon: 'question',
+			    	// cancel버튼 보이기
+			    	showCancelButton: true,
+			    	confirmButtonColor: '#0ABAB5',
+			    	cancelButtonColor: '#FF4040',
+			    	confirmButtonText: '확인',
+			    	cancelButtonText: '취소',
+				}).then(result => {
+					// 확인
+				    if (result.isConfirmed) { 
+						updateSch(arg);
+						calendar1.refetchEvents();
+					//취소
+				    } else if (result.isDismissed) { 
+				    	arg.revert();
+				    }
+				});
+			    
+			 },
+			// 일정 클릭 시 발생할 이벤트
+			eventClick: function(arg) {
+				// 의사나 원무과인지 확인
+				authCheck();
+				
+				// 모달창 열기
+				$("#createSchModal").modal("show");
+
+				let dsNoM = arg.event.id;
+				// 클릭한 일정 내용  DB에서 가져오기
+				selectSch(dsNoM);
+				if(dsNoM != ""){
+					$(".schHead").text("상세 일정");
+					// 있던 일정 클릭 시 저장 버튼 없애고 삭제 버튼 있게
+					$("#updateEvent").attr("style", "display:block;");
+					$("#realSaveEvent").attr("style", "display:none;");
+					$("#delEvent").attr("style", "display:block;");
+					// 수정 버튼 눌렀을 때
+					$("#updateEvent").on("click", function(){
+						updateSch(arg);
+						calendar1.refetchEvents();
+						$("#createSchModal").modal("hide");
+					});
+					// 삭제 버튼 눌렀을 때
+					$("#delEvent").on("click", function(){
+						console.log(dsNoM);
+						Swal.fire({
+					    	title: '삭제하시겠습니까?',
+					    	text: '복구 불가능 유의',
+					    	icon: 'question',
+					    	showCancelButton: true, // cancel버튼 보이기
+					    	confirmButtonColor: '#0ABAB5',
+					    	cancelButtonColor: '#FF4040',
+					    	confirmButtonText: '확인',
+					    	cancelButtonText: '취소',
+						}).then(result => {
+							// 확인
+						    if (result.isConfirmed) { 
+						    	deleteSch(dsNoM);
+						    	calendar1.refetchEvents();
+							//취소
+						    } else if (result.isDismissed) {
+						    	$("#createSchModal").modal("hide"); 
+						    }
+						});
+						
+					});
+				// 새 일정이면 저장 버튼만 나오게
+				} else {
+					$(".schHead").text("일정 추가");
+					$("#updateEvent").attr("style", "display:none;");
+					$("#realSaveEvent").removeAttr('style');;
+				}
+				
+			},
+			// 날짜를 선택하면 Day 캘린더나 Week 캘린더로 링크
+			navLinks : false,
+			// +more 표시 전 최대 이벤트 갯수, true는 셀 높이에 의해 결정
+			dayMaxEvents: true,
+			// 버튼 만들기
+			customButtons : {
+				calButton : {
+					text : "캘린더",
+					click : function() {
+						calendar1.refetchEvents();
+					}
+				},
+				saveEvent : {
+					text : "일정 추가 +",
+					click : function() {
+						// 의사나 원무과인지 확인
+						authCheck();
+						// 모달 열기
+						$("#createSchModal").modal("show");
+						calendar1.refetchEvents();
+					}
+				}
+			},
+			// 해더에 표시할 툴바
+			headerToolbar : {
+				left : 'calButton prev,next',
+				center : 'title',
+				right : 'saveEvent'
+			},
+
+			
+		});
+		calendar1.render();
+		
+		calendar2 = new FullCalendar.Calendar(calendarE2, {
+			// 한국 언어, 시간 설정
+			locale : 'ko',
+			timeZone: 'Asia/Seoul',
+			// allDay 칸 없앰
+			allDaySlot: false,
+			// 초기 로드 될때 보이는 캘린더 화면(기본 설정: 달)
+			initialView : 'timeGridDay',
+			// Day 캘린더에서 시작 시간
+			slotMinTime : '09:00',
+			// Day 캘린더에서 종료 시간
+			slotMaxTime : '20:00',
+			// 현재 시간 마크
+			nowIndicator : true,
+			// 해더에 표시할 툴바
+			headerToolbar : {
+				left : 'prev,next',
+				center : 'title',
+				right : 'today'
+			},
+			// 달력 일자 드래그 설정가능
+			selectable: true,
+		});
+		calendar2.render();
+
+		// 달력 로딩
+		let data2 = { year : year };
+		
+		$.ajax({
+			url:"/calendar/schList",
+			type:"post",
+			data: data2,
+			dataType: "JSON",
+			async: false,
+			beforeSend:function(xhr){
+				xhr.setRequestHeader("${_csrf.headerName}","${_csrf.token}");
+			},
+			success : function(data, status, xhr){
+				$.each(data, function(key, value){
+					// DB에서 가져온 일정 리스트 배치
+					dsNo = data[key].dsNo;
+					start = data[key].dsStrDate;
+					end = data[key].dsEndDate;
+					content = data[key].dsCont;
+					dbCate = data[key].dsCate; // if => color
+						if(dbCate === '진료'){
+							color = "#0ABAB5";
+						}else if(dbCate === '수술'){
+							color = "#cce6ff";
+						}else if(dbCate === '검사'){
+							color = "#d9ccff";
+						}else if(dbCate === '연구'){
+							color = "#DBF2F4";
+						}else{
+							color = "#ffcccc";
+						}
+					isAllDay = data[key].dsAd; // if => allDay
+						if(isAllDay == '0'){
+							isAllDay = $('input[name="allDay"]').val(false);
+						}else{
+							isAllDay = $('input[name="allDay"]').val(true);
+						}
+					
+					let eventData = {
+					    start: start,
+					    end: end,
+					    title: content,
+					    color: color,
+					 	// 종일 여부에 따라 true 또는 false 설정
+					    allDay: (isAllDay === 'true'),
+					    id : dsNo,
+					    groupId : dbCate,
+					};
+					
+					// month 달력에 이벤트 추가
+					calendar1.addEvent(eventData);
+					calendar1.render();
+					
+					//today 달력에 이벤트 추가
+					var endTime = $('#end').val();
+					calendar2.addEvent(eventData);
+					calendar2.render();
+				});
+				
+			}, error : function(xhr, status, error){
+			  Swal.fire({
+				   	title: '데이터 로딩 실패',
+				   	text: '새로고침 해주세요.',
+				   	icon: 'error',
+				   	confirmButtonColor: '#0ABAB5',
+				   	confirmButtonText: '확인',
+				})
+				return;
+		  }
+		});
+	});
+	
+	//빈 값 입력 시 오류
+	function nullCheck() {
+		if (start == "" || startTime == "" || end == "" || endTime == "" || content == "") {
+			Swal.fire({
+			   	title: '입력 오류',
+			   	text: '입력이 부족합니다. 모든 항목을 입력해주세요.',
+			   	icon: 'error',
+			   	confirmButtonColor: '#0ABAB5',
+			   	confirmButtonText: '확인',
+			})
+			return;
+		} else {
+			modalSave();
+		}
+	}
+	
+	// 모달이 숨겨질 때 초기화 함수를 연결
+	$("#createSchModal").on('hidden.bs.modal', function () {
+		initModal();
+	});
+	
+	// 모달칸 비우기
+	function initModal(){
+		$("#eventStart").val("");
+		$("#start").val('09:00');
+		$("#eventEnd").val("");
+		$("#end").val('09:30');
+		$("#eventContent").val("");
+		$("#color").val("#0ABAB5");
+		$("#createSchModal").css("display", "none");
+	}
+	
+	// 권한 확인
+	function authCheck(){
+		let data6 = { empNo : empNo };
+		// 로그인한 사람 사번으로 권한 조회
+		$.ajax({
+			url:"/calendar/authCheck",
+			type: "post",
+			data: data6,
+			dataType:"json",
+			beforeSend:function(xhr){
+				xhr.setRequestHeader("${_csrf.headerName}","${_csrf.token}");
+			},
+			success: function(res){
+				let nowAuth = res.authName;
+				console.log(nowAuth);
+				if (!(nowAuth === 'ROLE_AMS' || nowAuth === 'ROLE_DOC')) {
+				    Swal.fire({
+				        title: '일정 변경 권한 없음',
+				        text: '계정을 확인해주세요.',
+				        icon: 'error',
+				        confirmButtonColor: '#0ABAB5',
+				        confirmButtonText: '확인',
+				        didClose: function() {
+				            console.log('모달을 닫습니다.'); // 디버그 메시지
+				            $("#createSchModal").modal("hide");
+				        }
+				    });
+				} else {
+			        console.log('권한이 있습니다. 처리를 계속 진행합니다.'); // 디버그 메시지
+			    }
+				
+			},
+			error : function(xhr, status, error){
+			 	Swal.fire({
+			    	title: '권한 체크 실패!',
+			    	text: '재시도 해주세요.',
+			    	icon: 'error',
+			    	confirmButtonColor: '#0ABAB5',
+			    	confirmButtonText: '확인',
+				})
+				$("#createSchModal").modal("hide");
+			 	location.reload();
+			}
+		});
+	}
+	
+	// 새 일정 저장
+	function modalSave(){
+		// 모달창 입력값 확인
+		start = $("#eventStart").val();
+		startTime = $("#start").val();
+		end = $("#eventEnd").val();
+		endTime = $("#end").val();
+		content = $("#eventContent").val();
+		color = $("#color").val();
+		dsCate = $("#color option:selected").text();
+		isAllDay = $('input[name="allDay"]:checked').val();
+		
+		let eventData = {
+		    start: start + 'T' + startTime,
+		    end: end + 'T' + endTime,
+		    title: content,
+		    color: color,
+		 	// 종일 여부에 따라 true 또는 false 설정
+		    allDay: (isAllDay === 'true'),
+		};
+		
+		// 빈 값 입력 시 오류
+		if (eventData.title == "" || eventData.start == "" || eventData.end == "") {
+			Swal.fire({
+			   	title: '입력 오류',
+			   	text: '입력이 부족합니다. 모든 항목을 입력해주세요.',
+			   	icon: 'error',
+			   	confirmButtonColor: '#0ABAB5',
+			   	confirmButtonText: '확인',
+			})
+			return;
+			
+			} else {
+			   // month 달력에 이벤트 추가
+			   calendar1.addEvent(eventData);
+			   calendar1.render();
+			   
+			   //today 달력에 이벤트 추가
+			   var endTime = $('#end').val();
+			   
+			   calendar2.addEvent(eventData);
+			   calendar2.render();
+			   
+				// DB 저장
+			 	// 오라클 boolean 안됨.. 종일 여부에 따라 1 또는 0 설정
+				if(isAllDay === 'true'){
+					isAllDay = 1;
+				} else {
+					isAllDay = 0;
+				}
+			   
+			   let data = {
+					dsStrDate: start + 'T' + startTime,
+					dsEndDate: end + 'T' + endTime,
+					dsCont: content,
+					dsCate: dsCate,
+				    dsAd: isAllDay,
+				    empNo: empNo
+				};
+			// data 내용을 DB에 저장
+			$.ajax({
+				url: "/calendar/createSch",
+				contentType:"application/json;charset=utf-8",
+				data: JSON.stringify(data),
+				type: "post",
+				dataType:"json",
+				async: false,
+				beforeSend:function(xhr){
+					xhr.setRequestHeader("${_csrf.headerName}","${_csrf.token}");
+				},
+				success: function(res){
+					// 일정 등록 후 캘린더 새로고침
+			        calendar1.refetchEvents();
+					
+					if(res.result === 'success'){
+						Swal.fire({
+					    	title: '일정 등록 성공!',
+					    	text: '역쉬~!bbb',
+					    	icon: 'success',
+					    	confirmButtonColor: '#0ABAB5',
+					    	confirmButtonText: '확인',
+						})
+						location.reload();
+					}
+					
+					initModal();
+					$("#createSchModal").modal("hide");
+				},
+				error : function(xhr, status, error){
+				 Swal.fire({
+				    	title: '일정 등록 실패!',
+				    	text: '재시도 해주세요.',
+				    	icon: 'error',
+				    	confirmButtonColor: '#0ABAB5',
+				    	confirmButtonText: '확인',
+					})
+					$("#createSchModal").modal("hide");
+				 	location.reload();
+				}
+			});
+		}
+	}
+	
+	// 시작일 전으로 종료일 체크 방지
+	function dayCheck() {
+		let start = $("#eventStart").val();
+		let end = $("#eventEnd").val();
+		
+		if (end != '' && start > end) {
+		   //끝나는 날짜가 시작하는 날짜보다 값이 크면 안됨
+		   Swal.fire({
+				title: '날짜 설정 오류',
+				text: '시작보다 이전 날짜로 설정할 수 없습니다.',
+			   	icon: 'error',
+			   	confirmButtonColor: '#0ABAB5',
+			   	confirmButtonText: '확인',
+			})
+		// 시작일로 변경
+		$('#eventEnd').val(start);
+		return;
+		}
+	}
+	
+	// 선택 시간따라 30분 뒤 값 설정	
+	function timeSet() {
+		let start = $("#start").val();
+		let end = $("#end").val();
+		
+		if(start.substring(3, 5) == '00') // 19:00
+			end = start.substring(0, 2) + ':30';
+		else
+			end = (parseInt(start.substring(0, 2))+1) + ':00';
+		// 선택지에 30분 뒤 값 적용
+		$('#end').val(end);
+	}
+	
+	// 시작 시간 전으로 종료 시간 체크 방지
+	function timeCheck() {
+		let eventStart = $("#eventStart").val();
+		let eventEnd = $("#eventEnd").val();
+		let start = $("#start").val();
+		let end = $("#end").val();
+		// 종료가 시작보다 빠른 시간이면
+		if( eventStart > eventEnd && end <= start) {
+			Swal.fire({
+			   	title: '시간 설정 오류',
+			   	text: '시작보다 이전 시간으로 설정할 수 없습니다.',
+			   	icon: 'error',
+			   	confirmButtonColor: '#0ABAB5',
+			   	confirmButtonText: '확인',
+			})
+			if(start.substring(3, 5) == '00') // 19:00
+				end = start.substring(0, 2) + ':30';
+			else
+				end = (parseInt(start.substring(0, 2))+1) + ':00';
+			// 선택지에 30분 뒤 값 적용
+			$('#end').val(end);
+			return;
+		}
+	}
+	
+	// 스케줄번호로 일정 정보 조회
+	function selectSch(dsNo){
+		let selectSchdsNo = dsNo;
+		let data3 = { dsNo : selectSchdsNo };
+		
+		$.ajax({
+			url:"/calendar/selectSch",
+			type:"post",
+			data: data3,
+			dataType: "JSON",
+			async: false,
+			beforeSend:function(xhr){
+				xhr.setRequestHeader("${_csrf.headerName}","${_csrf.token}");
+			},
+			success : function(data){
+				// 값 가져오기
+				dsNo = data.dsNo;
+				start = data.dsStrDate.split("T");		// "2023-12-20T09:30"
+				end = data.dsEndDate.split("T");		// "2023-12-05T09:00"
+				content = data.dsCont;
+				dbCate = data.dsCate;
+					if(dbCate === '진료'){
+						color = "#0ABAB5";
+					}else if(dbCate === '수술'){
+						color = "#cce6ff";
+					}else if(dbCate === '검사'){
+						color = "#d9ccff";
+					}else if(dbCate === '연구'){
+						color = "#DBF2F4";
+					}else{
+						color = "#ffcccc";
+					}
+				isAllDay = data.dsAd;
+					if(isAllDay == '0'){
+						isAllDay = $('input[name="allDay"]').val(false);
+					}else{
+						isAllDay = $('input[name="allDay"]').val(true);
+					}
+					
+				// 모달에 값 세팅
+				$("#eventStart").val(start[0]);
+				$("#start").val(start[1]);
+				$("#eventEnd").val(end[0]);
+				$("#end").val(end[1]);
+				$('input[name="allDay"]:checked').val();
+				$("#eventContent").val(content);
+				$("#color").val(color);
+				$('#color').val(color).prop("selected",true);
+			}
+		});
+	}
+	
+	// 일정 삭제
+	function deleteSch(dsNoM) {
+		let selectSchdsNo = dsNoM;
+		let data4 = { dsNo : dsNoM };
+		console.log(data4);
+		// 선택된 일정 번호로 DB에서 찾아서 삭제
+		$.ajax({
+			url:"/calendar/deleteSch",
+			type:"post",
+			data: data4,
+			async: false,
+			dataType: "JSON",
+			beforeSend:function(xhr){
+				xhr.setRequestHeader("${_csrf.headerName}","${_csrf.token}");
+			},
+			success: function(res){
+				if(res.result === 'success'){
+					Swal.fire({
+				    	title: '일정 삭제 성공!',
+				    	text: '역쉬~!bbb',
+				    	icon: 'success',
+				    	confirmButtonColor: '#0ABAB5',
+				    	confirmButtonText: '확인',
+					}).then(() => {
+	                    // 일정 삭제 후 캘린더 새로고침
+	                    calendar1.refetchEvents();
+	                });
+				}
+			},
+			error : function(xhr, status, error){
+			 Swal.fire({
+			    	title: '일정 삭제 실패!',
+			    	text: '재시도 해주세요.',
+			    	icon: 'error',
+			    	confirmButtonColor: '#0ABAB5',
+			    	confirmButtonText: '확인',
+				})
+			}
+		});
+	}
+	
+	// 일정 수정
+	function updateSch(arg) {
+		// 클릭한 일정 정보
+		let startStr = arg.event.startStr;
+		let upStrDate = startStr.substring(0, 16);
+		let endStr = arg.event.endStr;
+		let upEndDate = endStr.substring(0, 16);
+		let upDsCont = arg.event.title;
+		let upDsCate = arg.event.groupId;
+		let upDsAd = arg.event.allDay;
+			if(upDsAd == 'false'){
+				upDsAd = '0';
+			}else{
+				upDsAd = '1';
+			}
+		let upSelectSchDsNo = arg.event.id;
+		
+		let data5 = {
+			dsStrDate: upStrDate,
+			dsEndDate: upEndDate,
+			dsCont: upDsCont,
+			dsCate: upDsCate,
+			dsAd: upDsAd,
+		    dsNo: upSelectSchDsNo
+		};
+		// data5로 보낸 일정 번호로 DB에서 해당 일정 찾아서 나머지 내용 바꿈(사번 제외)
+		$.ajax({
+			url:"/calendar/updateSch",
+			contentType:"application/json;charset=utf-8",
+			data: JSON.stringify(data5),
+			type:"post",
+			dataType: "JSON",
+			beforeSend:function(xhr){
+				xhr.setRequestHeader("${_csrf.headerName}","${_csrf.token}");
+			},
+			success: function(res){
+				if(res.result === 'success'){
+					Swal.fire({
+				    	title: '일정 수정 성공!',
+				    	text: '역쉬~!bbb',
+				    	icon: 'success',
+				    	confirmButtonColor: '#0ABAB5',
+				    	confirmButtonText: '확인',
+					})
+				}
+			},
+			error : function(xhr, status, error){
+			 Swal.fire({
+			    	title: '일정 수정 실패!',
+			    	text: '재시도 해주세요.',
+			    	icon: 'error',
+			    	confirmButtonColor: '#0ABAB5',
+			    	confirmButtonText: '확인',
+				})
+			}
+			
+		});
+	}
+	
+    // 종일 여부 체크하면 시간 선택 막기
+	$('input[type="radio"][name="allDay"]').change(function(){
+	    let isAllday = $("#wholeTime").is(':checked'); // '예'면 true, '아니오'면 false
+	    console.log(isAllday);
+		
+		// '예' 체크됐으면 시간 선택 막기
+		if(isAllday){
+			$("select[name='time-set']").attr('disabled', 'disabled');
+			$("#start").val('09:00');
+			$("#end").val('19:00');
+			$("select[name='time-set']").attr('style',"background-color: #ddd");
+		}else{
+			$("select[name='time-set']").removeAttr('disabled');
+			$("#start").val('09:00');
+			$("#end").val('09:30');
+			$("select[name='time-set']").removeAttr('style');
+		}
+	    
+	});
+	
+</script>

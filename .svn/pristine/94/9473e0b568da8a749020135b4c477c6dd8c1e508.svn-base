@@ -1,0 +1,37 @@
+package kr.or.dduk.clinic.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import kr.or.dduk.mapper.ClinicChartMapper;
+import kr.or.dduk.vo.ClinicChartVO;
+import kr.or.dduk.vo.PatientVO;
+
+@Service
+public class ClinicServiceImpl implements ClinicService {
+
+	@Autowired
+	ClinicChartMapper clinicChartMapper;
+	
+	/**
+	 * 특정 환자의 진료정보들을 간략하게 가져오는 메서드
+	 * 환자정보 클릭시 해당환자의 진료목록을 가져오기 위한 메서드
+	 * @param paNo 환자번호
+	 */
+	@Override
+	public PatientVO simpleClinicChartList(String paNo){
+		return this.clinicChartMapper.simpleClinicChartList(paNo);
+	}
+	
+	/**
+	 * 특정 진료의 정보를 자세히 가져오는 메서드
+	 * 환자의 진료목록에서 특정 진료를 클릭 시 해당 진료의 정보를 자세히 화면에 출력시켜주기 위한 메서드
+	 * @param clinicNo 진료번호
+	 */
+	@Override
+	public ClinicChartVO clinicChartDetail(String clinicNo) {
+		return this.clinicChartMapper.clinicChartDetail(clinicNo);
+	}
+}

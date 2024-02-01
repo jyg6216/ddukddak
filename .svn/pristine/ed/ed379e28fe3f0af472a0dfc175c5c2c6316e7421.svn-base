@@ -1,0 +1,15 @@
+package kr.or.dduk.ams.service;
+
+import java.util.List;
+
+import kr.or.dduk.vo.ReservationVO;
+
+public interface ReservationService {
+
+	public List<ReservationVO> getTodayReservation();
+
+	public List<ReservationVO> getReservationUntilToday();
+
+	public ReservationVO createReservation(ReservationVO reservationVO);
+
+}

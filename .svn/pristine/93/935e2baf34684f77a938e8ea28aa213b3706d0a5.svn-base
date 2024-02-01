@@ -1,0 +1,13 @@
+package kr.or.dduk.clinic.service;
+
+import java.util.List;
+
+import kr.or.dduk.vo.ClinicChartVO;
+import kr.or.dduk.vo.PatientVO;
+
+public interface ClinicService {
+	
+	public PatientVO simpleClinicChartList(String paNo);
+	
+	public ClinicChartVO clinicChartDetail(String clinicNo);
+}

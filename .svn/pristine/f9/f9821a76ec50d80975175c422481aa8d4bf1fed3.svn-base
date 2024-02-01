@@ -1,0 +1,99 @@
+package kr.or.dduk.ams.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.dduk.ams.service.HospitalReceptionService;
+import kr.or.dduk.common.service.CommonService;
+import kr.or.dduk.util.SessionInfo;
+import kr.or.dduk.vo.HospitalReceptionVO;
+import kr.or.dduk.vo.PatientVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RequestMapping("/ams")
+@Controller
+public class HospitalReceptionController {
+
+	@Autowired
+	HospitalReceptionService hospitalReceptionService;
+	
+	// 환자 리스트를 위해 쓰는 커먼서비스
+	@Autowired
+	CommonService commonService;
+	
+	// 현재 접속한 사람의 사번을 가져오기 위해
+	@Autowired
+	SessionInfo sessionInfo;
+	
+	/**
+	 * 접수 페이지
+	 * @param model 환자 리스트
+	 * @return reception.jsp
+	 */
+	@GetMapping("/reception")
+	public String reception(Model model) {
+		//모든 접수 내역 가져오기
+		List<HospitalReceptionVO> hospitalReceptionVOList = this.hospitalReceptionService.getAllReceptionList();
+
+		//이걸여기서 나누면안되네 수정필요
+		List<HospitalReceptionVO> waitingReceptionVOList = new ArrayList<HospitalReceptionVO>();
+		List<HospitalReceptionVO> completeReceptionVOList = new ArrayList<HospitalReceptionVO>();
+		
+		for (HospitalReceptionVO hospitalReceptionVO : hospitalReceptionVOList) {
+			if(hospitalReceptionVO.getHsrpState().equals("RCST01")) {
+				waitingReceptionVOList.add(hospitalReceptionVO);
+			}else {
+				completeReceptionVOList.add(hospitalReceptionVO);
+			}
+		}
+		
+		model.addAttribute("hospitalReceptionVOList",hospitalReceptionVOList);
+		model.addAttribute("waitingReceptionVOList",waitingReceptionVOList);
+		model.addAttribute("completeReceptionVOList",completeReceptionVOList);
+		
+		return "ams/reception";
+	}
+	
+	
+	/**
+	 * 비동기통신 방법으로 현재 담당의가 나인 진료대기환자 목록을 뽑아옴
+	 */
+	@ResponseBody
+	@PostMapping("/getReceptionList")
+	public List<HospitalReceptionVO> getReceptionList() {
+		String empNo = sessionInfo.getEmpNo();
+		List<HospitalReceptionVO> hospitalReceptionVOList = this.hospitalReceptionService.getReceptionList(empNo);
+		return hospitalReceptionVOList;
+	}
+	
+	/**
+	 * 비동기통신 방법으로 모든 환자 목록을 가져옴
+	 */
+	@ResponseBody
+	@GetMapping("/getPatientList")
+	public List<PatientVO> getPatientList() {
+		List<PatientVO> patientVOList = this.commonService.list();
+		return patientVOList;
+	}
+	
+	/**
+	 * 비동기통신 방법으로 모든 환자 목록을 가져옴
+	 */
+	@ResponseBody
+	@PostMapping("/searchPatientByReg")
+	public PatientVO searchPatientByReg(@RequestBody String paReg) {
+		PatientVO patientVO = this.commonService.searchPatientByReg(paReg);
+		System.out.println(paReg);
+		return patientVO;
+	}
+}

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.dduk.mapper.WardMapper">
+	
+	<!-- 입원번호로 해당 입원의 간호차트 리스트와 간단한 입원정보를 가져옴 -->
+	<select id="getNurseChartList" resultMap="admissionChartMap">
+		SELECT
+            AC.ADMI_NO,
+            AC.ADMI_INDT, 
+            AC.ADMI_EXP_OUTDT, 
+            E1.EMP_NAME AS ADMI_EMP_NAME,
+            NC.NUR_NO,
+            NC.NUR_ENDT
+		FROM ADMISSION_CHART AC
+        JOIN EMPLOYEE E1 ON AC.EMP_NO = E1.EMP_NO
+        LEFT JOIN NUR_CHART NC ON AC.ADMI_NO = NC.ADMI_CD AND NC.NUR_TYPE = 'NCSO01'
+		WHERE AC.ADMI_NO = #{admiNo}
+        ORDER BY NC.NUR_ENDT DESC
+	</select>
+	
+	<!-- 간호차트 번호로 간호차트 내용,작성자,작성일을 가져옴 -->
+	<select id="getNurseChartDetail" resultMap="nurChartMap">
+		SELECT
+            NC.NUR_NO,
+            E.EMP_NAME AS NUR_CHART_EMP_NAME,
+            NC.NUR_CONT,
+            NC.NUR_ENDT
+        FROM NUR_CHART NC
+        JOIN EMPLOYEE E ON NC.EMP_NO = E.EMP_NO
+        WHERE NC.NUR_NO = #{nurNo}
+	</select>
+	
+	<!-- 간호차트/인수인계 insert -->
+	<insert id="createNurseChart" parameterType="nurChartVO">
+		<selectKey resultType="String" order="BEFORE" keyProperty="nurNo">
+			SELECT 'NC' || NVL(TRIM(TO_CHAR(SUBSTR(MAX(NUR_NO), 3) + 1, '0000')), '0001') AS NUR_NO FROM NUR_CHART
+		</selectKey>
+		INSERT INTO NUR_CHART(NUR_NO, EMP_NO, NUR_CONT, NUR_ENDT, NUR_TYPE, ADMI_CD)
+		VALUES(#{nurNo}, #{nurChartEmpNo}, #{nurCont}, sysdate, #{nurType}, #{admiCd})
+	</insert>
+	
+	<!-- 인수인계 리스트 뽑아오기 -->
+	<select id="getHandOverList" resultMap="nurChartMap">
+		SELECT
+            NC.NUR_NO,
+            E.EMP_NAME AS NUR_CHART_EMP_NAME,
+            NC.NUR_CONT,
+            NC.NUR_ENDT,
+            AFD.ATCH_FILE_DETAIL_SAVENM AS NUR_CHART_PROFILE_SAVENM,
+            AFD.ATCH_FILE_DETAIL_ORLNG AS NUR_CHART_PROFILE_ORLNG
+		FROM NUR_CHART NC 
+        JOIN EMPLOYEE E ON NC.EMP_NO = E.EMP_NO
+        LEFT JOIN ATCH_FILE_DETAIL AFD ON E.ATCH_FILE_CD = AFD.ATCH_FILE_CD
+		WHERE NC.ADMI_CD = #{admiCd}
+        AND NC.NUR_TYPE = 'NCSO02'
+        ORDER BY NC.NUR_ENDT ASC
+	</select>
+	
+	<!-- 입원차트 resultMap -->
+	<resultMap type="admissionChartVO" id="admissionChartMap">
+		<result property="admiNo" column="ADMI_NO"/>
+		<result property="adrmRoomno" column="ADRM_ROOMNO"/>
+		<result property="adrmBedno" column="ADRM_BEDNO"/>
+		<result property="admiIndt" column="ADMI_INDT"/>
+		<result property="admiExpOutdt" column="ADMI_EXP_OUTDT"/>
+		<result property="admiOutdt" column="ADMI_OUTDT"/>
+		<result property="admiFile" column="ADMI_FILE"/>
+		<result property="paNo" column="PA_NO"/>
+		<result property="empNo" column="EMP_NO"/>
+		<result property="admiReason" column="ADMI_REASON"/>
+		
+		<result property="admiEmpName" column="ADMI_EMP_NAME"/>
+		<collection property="nurChartVOList" resultMap="nurChartMap"></collection>
+	</resultMap>
+	
+	<!-- 간호차트 resultMap -->
+	<resultMap type="nurChartVO" id="nurChartMap">
+		<result property="nurNo" column="NUR_NO"/>
+		<result property="nurChartEmpNo" column="NUR_CHART_EMP_NO"/>
+		<result property="nurCont" column="NUR_CONT"/>
+		<result property="nurEndt" column="NUR_ENDT"/>
+		<result property="nurType" column="NUR_TYPE"/>
+		<result property="admiCd" column="ADMI_CD"/>
+		
+		<result property="nurChartEmpName" column="NUR_CHART_EMP_NAME"/>
+		<result property="nurChartProfileSavenm" column="NUR_CHART_PROFILE_SAVENM"/>
+		<result property="nurChartProfileOrlng" column="NUR_CHART_PROFILE_ORLNG"/>
+	</resultMap>
+</mapper>

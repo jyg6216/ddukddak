@@ -1,0 +1,113 @@
+package kr.or.dduk.clinic.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.dduk.clinic.service.OrderSetService;
+import kr.or.dduk.vo.InjuryVO;
+import kr.or.dduk.vo.MedicineVO;
+import kr.or.dduk.vo.OrderSetVO;
+import kr.or.dduk.vo.TestVO;
+import kr.or.dduk.vo.TreatmentVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/orderSet")
+public class OrderSetController {
+
+	@Autowired
+	OrderSetService orderSetService;
+	
+	
+	/**
+	 * 로그인한 의사의 사번으로 DB에서 오더세트VO 리스트를 가져와서 오더세트에 출력
+	 */
+	@ResponseBody
+	@PostMapping("/getOrderSetList")
+	public List<OrderSetVO> getOrderSetList(){
+		List<OrderSetVO> orderSetVOList = this.orderSetService.getOrderSetList();
+		return orderSetVOList;
+	}
+	
+	
+	/**
+	 * 오더세트 추가시키는 함수
+	 */
+	@ResponseBody
+	@PostMapping("/createOrderSet")
+	public OrderSetVO createOrderSet(@RequestBody OrderSetVO orderSetVO) {
+		log.info("여기 : " + orderSetVO.getOrderSetOrdcd());
+		int result = this.orderSetService.createOrderSet(orderSetVO);
+		
+		if(result > 0) {
+			return orderSetVO;
+		} else {
+			return null;
+		}
+	}
+	
+	
+	/**
+	 * 오더세트 삭제시키는 함수
+	 */
+	@ResponseBody
+	@PostMapping("/deleteOrderSet")
+	public int deleteOrderSet(@RequestBody List<OrderSetVO> orderSetVOList) {
+		return this.orderSetService.deleteOrderSet(orderSetVOList);
+	}
+	
+	
+	/**
+	 * 오더세트 추가 모달 에서 오더카테고리 선택에 따른 검색 풀 갱신
+	 * InjuryVO의 List 리턴
+	 */
+	@ResponseBody
+	@PostMapping("/getInjuryVOList")
+	public List<InjuryVO> getInjuryVOList(){
+		List<InjuryVO> injuryVO = this.orderSetService.getInjuryVOList();
+		return injuryVO;
+	}
+	
+	
+	/**
+	 * 오더세트 추가 모달 에서 오더카테고리 선택에 따른 검색 풀 갱신
+	 * TestVO의 List 리턴
+	 */
+	@ResponseBody
+	@PostMapping("/getTestVOList")
+	public List<TestVO> getTestVOList(){
+		List<TestVO> testVO = this.orderSetService.getTestVOList();
+		return testVO;
+	}
+	
+	
+	/**
+	 * 오더세트 추가 모달 에서 오더카테고리 선택에 따른 검색 풀 갱신
+	 * MedicineVO의 List 리턴
+	 */
+	@ResponseBody
+	@PostMapping("/getMedicineVOList")
+	public List<MedicineVO> getMedicineVOList(){
+		List<MedicineVO> medicineVO = this.orderSetService.getMedicineVOList();
+		return medicineVO;
+	}
+	
+	
+	/**
+	 * 오더세트 추가 모달 에서 오더카테고리 선택에 따른 검색 풀 갱신
+	 * TreatmentVO의 List 리턴
+	 */
+	@ResponseBody
+	@PostMapping("/getTreatmentVOList")
+	public List<TreatmentVO> getTreatmentVOList(){
+		List<TreatmentVO> treatmentVO = this.orderSetService.getTreatmentVOList();
+		return treatmentVO;
+	}
+}

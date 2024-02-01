@@ -1,0 +1,13 @@
+package kr.or.dduk.treatment.service;
+
+import java.util.List;
+
+import kr.or.dduk.vo.PatientVO;
+
+public interface TreatmentRecordService {
+
+	List<PatientVO> treatmentPatientList();
+
+	PatientVO selectTreatmentPatientInfo(String paNo);
+
+}

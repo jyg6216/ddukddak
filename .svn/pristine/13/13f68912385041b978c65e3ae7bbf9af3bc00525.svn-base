@@ -1,0 +1,36 @@
+package kr.or.dduk.clinic.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.dduk.clinic.service.OrderSetService;
+import kr.or.dduk.util.SessionInfo;
+import kr.or.dduk.vo.OrderSetVO;
+
+@Controller
+@RequestMapping("/orderSet")
+public class OrderSetController {
+
+	@Autowired
+	OrderSetService orderSetService;
+	
+	@Autowired
+	SessionInfo sessionInfo;
+	
+	/**
+	 * 로그인한 의사의 사번으로 DB에서 오더세트VO 리스트를 가져와서 오더세트에 출력
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/getOrderSetList")
+	public List<OrderSetVO> getOrderSetList() {
+		String empNo = sessionInfo.getEmpNo();
+		List<OrderSetVO> orderSetVOList = this.orderSetService.getOrderSetList(empNo);
+		return orderSetVOList;
+	}
+}

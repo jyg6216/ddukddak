@@ -1,0 +1,28 @@
+package kr.or.dduk.treatment.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import kr.or.dduk.mapper.TreatmentRecordMapper;
+import kr.or.dduk.treatment.service.TreatmentRecordService;
+import kr.or.dduk.vo.PatientVO;
+
+@Service
+public class TreatmentRecordServiceImpl implements TreatmentRecordService{
+
+	@Autowired
+	TreatmentRecordMapper treatmentRecordMapper;
+	
+	@Override
+	public List<PatientVO> treatmentPatientList() {
+		return this.treatmentRecordMapper.treatmentPatientList();
+	}
+
+	@Override
+	public PatientVO selectTreatmentPatientInfo(String paNo) {
+		return this.treatmentRecordMapper.selectTreatmentPatientInfo(paNo);
+	}
+
+}

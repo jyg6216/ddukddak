@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.dduk.mapper.WorkforceManagementMapper">
+
+<insert id="createNurSchedule" parameterType="list">
+	<selectKey resultType="String" order="BEFORE" keyProperty="nurscNo">
+		SELECT 'NUSC' || TRIM(TO_CHAR(SUBSTR(MAX(NURSC_NO),5)+1,'0000')) 
+		AS NURSC_NO FROM NUR_SCHEDULE
+	</selectKey>
+	<foreach collection="list" item="item" separator=" " open="INSERT ALL" close="SELECT 1 FROM DUAL">
+		INTO NUR_SCHEDULE (NURSC_DT, EMP_NO, NURSC_TYPE, NURSC_ENDT, NURSC_WT, NURSC_NO)
+		VALUES (#{item.nurscDt}, #{item.empNo}, #{item.nurscType}, SYSDATE, #{item.nurscWt}, #{nurscNo})
+	</foreach>
+</insert>
+
+</mapper>

@@ -1,0 +1,353 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<style>
+.btn-pay-state {
+	width: 70px;	
+    height: 25px;
+    text-align: center;
+}
+
+.pay-wrap {
+    display: flex;
+    height: 840px;
+    width: 1516px;
+}
+
+.patient-list-wrap {
+	width: 850px;
+	margin-right: 16px;
+}
+
+.pay-info-wrap {
+	width: 650px;
+}
+
+.patient-list-header {
+	border-bottom: 1px solid #EBEFF0;
+    margin-left: -17px;
+    width: 850px;
+    height: 50px;
+}
+
+.pay-info-header {
+	border-bottom: 1px solid #EBEFF0;
+    margin-left: -17px;
+    width: 650px;
+    height: 50px;
+}
+
+.patient-list-body {
+    max-height: 740px;
+    overflow-y: scroll;
+}
+
+.pay-tr:hover{
+	background-color: #F8F9FC;
+}
+
+.number {
+	text-align: right;
+}
+
+.selected {
+	background-color: #EDF8F9;
+}
+
+.filter-wrap {
+    margin-top: -10px;
+}
+
+#payType {
+	height:10px;
+	width:200px;
+}
+
+#payNameSearch {
+    width: 100px;
+    height: 30px;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: solid 1px #e8e8e8;
+}
+
+#payDateRange {
+    height: 30px;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: solid 1px #e8e8e8;
+}
+
+.nice-select {
+	line-height: 30px !important;
+	width: 100px !important;
+    height: 30px !important;
+    margin-right: 14px;
+}
+
+</style>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+<link rel="stylesheet" href="/resources/css/nice-select.css" />
+
+<div class="pay-wrap">
+	<div class="dduk-inner-border patient-list-wrap">
+		<div class="dduk-title-area patient-list-header">
+			<h1 style="margin-left: 16px;">수납 리스트</h1>
+			<div class="filter-wrap">
+				<select id="payType">
+					<option>전체</option>
+					<option>미수납</option>
+					<option>부분수납</option>
+					<option>수납완료</option>
+				</select>
+				<input type="text" id="payNameSearch" placeholder="이름검색" />
+				<input type="text" id="payDateRange" placeholder="기간선택" />
+			</div>
+		</div>
+		<div class="patient-list-body">
+			<table class="table table-head-fixed text-nowrap table-pay-list" id="inventory-list">
+	   			<thead>
+					<tr>
+						<th style="width: 80px;">수납상태</th>
+						<th style="width: 80px;">환자명</th>
+						<th style="width: 60px;">보험여부</th>
+						<th style="width: 120px;">연락처</th>
+						<th style="width: 60px;">수납시작일</th>
+						<th style="width: 100px;">미수금액(원)</th>
+						<th style="width: 100px;">납부금액(원)</th>
+						<th style="width: 100px;">수납총액(원)</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="dduk-inner-border pay-info-wrap">
+		<div class="dduk-title-area pay-info-header">
+			<h1 style="margin-left: 16px;">수납 상세</h1>
+		</div>
+	</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/moment@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@latest"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script type="text/javascript" src="/resources/js/jquery.nice-select.min.js"></script>
+<script>
+$(function(){
+	
+	// 페이지 로딩시 최초 1번 수납 리스트를 DB에서 가져옴
+	let payList = {};
+	getPayList();
+	
+	function getPayList(){
+    	$.ajax({
+    		url: '/ams/getPayList',
+    		dataType: 'json',
+    		type: 'post',
+    		beforeSend:function(xhr){
+    			xhr.setRequestHeader("${_csrf.headerName}","${_csrf.token}");
+    		},
+    		success: function(rst){
+    			console.log('가져온 수납 리스트의 정보 : ', rst);
+				payList = rst;
+				// 수납 리스트 보여주기
+				showPayList();
+    		},
+    		error: function(xhr, status, error){
+    			console.log('Error:', xhr, status, error);
+    		}
+    	});
+	}
+	
+	
+	// 수납타입 필터에 niceselect 적용
+	$('#payType').niceSelect();
+	
+	
+	// 수납기간 필터에 dateRangePicker 적용
+	$('#payDateRange').daterangepicker({
+    	"showDropdowns": true,
+    	"autoApply": true,
+    	"locale": {
+            "format": "YYYY-MM-DD",
+            "separator": " ~ ",
+            "applyLabel": "확인",
+            "cancelLabel": "취소",
+            "fromLabel": "From",
+            "toLabel": "To",
+            "customRangeLabel": "Custom",
+            "weekLabel": "W",
+            "daysOfWeek": ["일", "월", "화", "수", "목", "금", "토"],
+            "monthNames": ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"],
+        },
+        "parentEl": "expectAdmissionDateDiv",
+    	"opens": "right",
+    	"buttonClasses": "btn-admission-range",
+    	"applyButtonClasses": "btn-save-admission-range",
+    	"cancelClass": "btn-cancel-admission-range"
+	});
+	$('#payDateRange').val('');
+	
+	
+	// 필터 사용시 이벤트들
+	$(document).on('change', '#payType', showPayList);
+	$(document).on('input', '#payNameSearch', showPayList);
+	$(document).on('change', '#payDateRange', showPayList);
+	
+	
+	// 수납 리스트 출력
+	function showPayList(){
+		
+		let tr = '';
+
+		// 수납 리스트를 순회
+		$.each(payList, function(index, vo){
+			
+			// 우선 결제 상태 필터링
+			let payStateSelected = $('#payType :selected').val();
+			let payState = vo.payState;
+			
+			if(payStateSelected === '미수납' && payState !== 'PMYN01') return;
+			if(payStateSelected === '부분수납' && payState !== 'PMYN02') return;
+			if(payStateSelected === '수납완료' && payState !== 'PMYN03') return;
+			
+			// 이름검색 필터링
+			let nameVal = $('#payNameSearch').val();
+			
+			if(vo.patientVO.paName.indexOf(nameVal) === -1) return;
+			
+			// 기간검색 필터링
+			let dateRange = $('#payDateRange').val();
+			if(dateRange !== ''){
+				let payStdt = new Date(vo.payStdt);
+				let startDate = new Date(dateRange.split(' ~ ')[0]);
+				startDate.setHours(0, 0, 0, 0);
+				let endDate = new Date(dateRange.split(' ~ ')[1]);
+				endDate.setHours(23, 59, 59, 999);
+				// 선택 기간내에 수납시작날짜가 존재하지 않으면
+				if(!(payStdt >= startDate && payStdt <= endDate)) return;
+			}
+			
+			// 필터링으로 걸러진 데이터 출력
+			// 수납 여부
+			let payStateStr = '';
+			if(payState === 'PMYN01') {
+				payStateStr = '<button class="btn-pay-state dduk-btn-danger">미수납</button>';
+			} else if(payState === 'PMYN02') {
+				payStateStr = '<button class="btn-pay-state dduk-btn-disabled">부분수납</button>'
+			} else if(payState === 'PMYN03') {
+				payStateStr = '<button class="btn-pay-state dduk-btn-info">수납완료</button>'
+			}
+			
+			// 보험 여부
+			let hasInsr = '';
+			if(vo.patientVO.paInsrYn === 'ISYN01') {
+				hasInsr = 'O';
+			} else if(vo.patientVO.paInsrYn === 'ISYN02') {
+				hasInsr = 'X';
+			}
+			
+			// 납부 금액 계산
+			let payMn = 0;
+			$.each(vo.payRecordVOList, function(i, prVO){
+				payMn += prVO.prPaymn;
+			});
+			
+			// 미수금 계산
+			let leftMn = vo.payTotalmn - payMn;
+			
+			// 수납시작일
+			let payStdt = formatDateString(vo.payStdt);
+			
+			tr += `
+				<tr class="pay-tr">
+					<td class="dark-gray-text">\${payStateStr}</td>
+					<td class="dark-gray-text">\${vo.patientVO.paName}</td>
+					<td class="dark-gray-text">\${hasInsr}</td>
+					<td class="dark-gray-text">\${vo.patientVO.paPh}</td>
+					<td class="dark-gray-text">\${payStdt}</td>
+					<td class="number dark-gray-text">\${leftMn}</td>
+					<td class="number dark-gray-text">\${payMn}</td>
+					<td class="number dark-gray-text">\${vo.payTotalmn}</td>
+				</tr>
+			`;
+		});
+		
+		// 출력시킬 tr이 없으면
+		if(tr === ''){
+			tr += '<tr style="text-align:center"><td colspan="8" class="dark-gray-text">해당하는 데이터가 없습니다</td></tr>';
+		} 
+		
+		$('.table-pay-list tbody').html(tr);
+	}
+	
+	
+	// 환자 리스트 클릭 이벤트
+	$(document).on('click', '.pay-tr', function(){
+		
+		// 선택효과 적용
+		$('.pay-tr').removeClass('selected');
+		$(this).addClass('selected');
+	});
+	
+	
+	// 유틸 스크립트 시작
+	
+	// 날짜형식 데이터를 넣으면 yyyy-MM-dd 로 변환해주는 함수
+	function formatDateString(dateString) {
+
+		const dateData = new Date(dateString);
+		let year = dateData.getFullYear();
+		let month = dateData.getMonth() + 1; 
+		let date = dateData.getDate();
+		
+		// 한 자리 숫자에 0을 붙이는 처리
+    	month = month < 10 ? '0' + month : month;
+    	date = date < 10 ? '0' + date : date;
+		
+		let dateStr = `\${year}-\${month}-\${date}`;
+		
+		return dateStr;
+	}
+	
+	// 날짜형식 데이터를 넣으면 yyyy-MM-dd HH:mm 으로 변환해주는 함수
+	function formatDateStringUpgrade(dateString) {
+	    const dateData = new Date(dateString);
+	    let year = dateData.getFullYear();
+	    let month = dateData.getMonth() + 1; 
+	    let date = dateData.getDate();
+	    let hours = dateData.getHours();
+	    let minutes = dateData.getMinutes();
+
+	    // 한 자리 숫자에 0을 붙이는 처리
+	    month = month < 10 ? '0' + month : month;
+	    date = date < 10 ? '0' + date : date;
+	    hours = hours < 10 ? '0' + hours : hours;
+	    minutes = minutes < 10 ? '0' + minutes : minutes;
+
+	    let dateStr = `\${year}-\${month}-\${date} \${hours}:\${minutes}`;
+
+	    return dateStr;
+	}
+	
+	
+	// 날짜형식 데이터를 넣으면 HH:mm 으로 변환해주는 함수
+	function formatTimeString(dateString) {
+	    const dateData = new Date(dateString);
+	    let hours = dateData.getHours();
+	    let minutes = dateData.getMinutes();
+
+	    // 한 자리 숫자에 0을 붙이는 처리
+	    hours = hours < 10 ? '0' + hours : hours;
+	    minutes = minutes < 10 ? '0' + minutes : minutes;
+
+	    return `\${hours}:\${minutes}`;
+	}
+	
+	// 유틸 스크립트 끝
+})
+</script>

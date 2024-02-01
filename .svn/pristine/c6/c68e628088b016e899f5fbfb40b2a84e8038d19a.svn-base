@@ -1,0 +1,49 @@
+package kr.or.dduk.comcode.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.dduk.comcode.service.ComCodeService;
+import kr.or.dduk.employee.controller.EmployeeController;
+import kr.or.dduk.vo.ComDetailCodeInfoVO;
+import kr.or.dduk.vo.EmployeeVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RequestMapping("/comcode")
+@Controller
+public class ComCodeController {
+	
+	@Autowired
+	ComCodeService comCodeService;
+	
+	/**
+	 * 공통코드로 상세코드 정보 조회
+	 * @param employeeVO
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/detailAjax")
+	public List<ComDetailCodeInfoVO> detailAjax(@RequestBody EmployeeVO employeeVO){
+		log.info("employeeVO : " + employeeVO);
+		
+		String empDeptCd = employeeVO.getEmpDeptCd();
+		String keyword = empDeptCd+"%";
+		log.info("keyword : " + keyword);
+			
+		List<ComDetailCodeInfoVO> comCodeDetdata = this.comCodeService.getcomDetailCodeInfo(keyword);
+		log.info("comCodeDetdata : " + comCodeDetdata);
+		
+		return comCodeDetdata;
+	}
+	
+
+	
+	
+}

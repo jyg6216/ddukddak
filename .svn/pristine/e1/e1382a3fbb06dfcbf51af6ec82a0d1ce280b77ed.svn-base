@@ -1,0 +1,67 @@
+package kr.or.dduk.ams.service.impl;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import kr.or.dduk.ams.service.AdmissionService;
+import kr.or.dduk.mapper.AdmissionMapper;
+import kr.or.dduk.vo.AdmissionRoomVO;
+import kr.or.dduk.vo.ClinicChartVO;
+import kr.or.dduk.vo.PatientVO;
+
+@Service
+public class AdmissionServiceImpl implements AdmissionService{
+
+	@Autowired
+	private AdmissionMapper admissionMapper;
+	
+	//입원대기 환자 조회
+	@Override
+	public List<PatientVO> selectAdmissionList(String clinicNo) {
+		return admissionMapper.selectAdmissionList(clinicNo);
+	}
+
+	//퇴원대기 환자 조회
+	@Override
+	public List<PatientVO> selectDischargeList(String clinicNo) {
+		return admissionMapper.selectDischargeList(clinicNo);
+	}
+
+	//환자 상세 정보 조회
+	@Override
+	public List<PatientVO> getPatientDetail(String paNo) {
+		return this.admissionMapper.getPatientDetail(paNo);
+	}
+
+	//진료 차트 조회(의사 소견 가져오기)
+	@Override
+	public List<ClinicChartVO> getClinicOpinion(String clinicNo) {
+		return admissionMapper.getClinicOpinion(clinicNo);
+	}
+
+	//입원실 정보 조회
+	@Override
+	public List<AdmissionRoomVO> admissionRoomVOList() {
+		return admissionMapper.admissionRoomVOList();
+	}
+
+	//입원 등록
+	@Override
+	public int admissionInsert(Map<String, Object> map) {
+		
+		int result = admissionMapper.admissionInsert(map);
+		
+		if(result > 0) {
+			admissionMapper.updateAdmissionRoom(map);
+			admissionMapper.updatePatient(map);
+			admissionMapper.updateClinicChart(map);
+		}
+		
+		return result;
+	}
+
+}

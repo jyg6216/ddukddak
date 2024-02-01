@@ -1,0 +1,548 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<style>
+.dduk-title-area {
+	margin-top: -10px;
+	margin-bottom : 0px;
+}
+
+.h1-default {
+	display:hidden;
+	text-align: center;
+	width: 100%;
+	margin-top: 300px;
+	color: #8D9EA5 !important;
+	font-size: 2.5em !important;
+}
+.info-input{
+	height: 32px;
+	margin-bottom: 45px;
+	width: 180px;
+}
+
+.patient-info-div{
+	gap: 18px;
+	margin: 0px 10px 0px 10px;
+	display: flex;
+	flex-wrap: wrap;
+}
+.patient-info-left{
+	text-align: right;
+	width: 80px;
+}
+.patient-info-right{
+	text-align: left;
+	width: 180px;
+}
+
+.reception-center-div {
+	height: 416px;
+	width: 666px;
+	margin-top: 30px;
+}
+
+/* 검색창 */
+.search{
+	width: 292px;
+	height: 48px;
+}
+
+.search-btn {
+	margin-left:8px; 
+	padding: 4px 14px; 
+	border-radius: 12px; 
+	height: 38px;
+}
+
+.search-btn:hover {
+	background: var(--ci-01, #0ABAB5);
+}
+
+#searchPatientBtn {
+	background-color: transparent;
+    position: absolute;
+    top: 906px;
+    left: 510px;
+}
+
+.autocomplete {
+	position: absolute;
+}
+
+.autocomplete > div.active {
+  background: #e0e5f6;
+  color: #000;
+}
+
+.autocomplete > div {
+  background: #f1f3f499;
+  padding: .2rem .6rem;
+}
+
+/* 오더추가 시작 */
+.rounds-table{
+	width: 100%;
+}
+.td-padding {
+    padding: 10px 0px 10px 5px;
+}
+.tr-column {
+    background: #F8F9FC;
+}
+.medicine-order-day, .medicine-order-per, .medicine-order-dose {
+	width: 20px;
+	height: 20px;
+	margin-right: 5px;
+}
+.medicine-order-qt {
+	width: 25px;
+	height: 20px;
+	margin-right: 5px;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+/* 오더추가 끝 */
+
+/* 진단명 */
+.clinic-history {
+	resize: none;
+	width: 50%;
+	height: 50px;
+}
+
+.textarea-clinic-history-opinion {
+	resize: none;
+	width: 90%;
+	height: 150px;
+}
+
+/* QR버튼 */
+.qr-btn-container {
+    display: flex;
+    align-items: center;
+}
+
+
+</style>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+
+<div class="dduk-body-border patient-list">
+	<div>
+		<div class="dduk-title-area">
+			<h2>검사 대기환자 목록</h2>
+		</div>
+		<div class="dduk-x-pd8">
+			<table class="patient-list-table" id="waitingQueue" style="text-align: center">
+				<tr class="tr-padding">
+					<th class="td-padding gray-text" style="width:20px;">No</th>
+					<th class="td-padding gray-text paName" style="width:90px;">이름</th>
+					<th class="td-padding gray-text" style="width:110px;">생년월일</th>
+					<th class="td-padding gray-text" style="text-align:center">상태</th>
+				</tr>
+				<tbody id="patientTbody">
+				</tbody>
+				</table>
+			</div>	
+		</div>
+</div>
+	
+<div class="dduk-body-border patient-detail" style="width: 700px; position: relative;">
+	<div class="dduk-title-area" style="margin-bottom: -20px;">
+		<div class="d-flex align-items-center">
+			<h2 id="in-h2">차트</h2>
+			<span id="paInfo" class="gray-text mar-b-8 mar-l-8"></span>
+		</div>
+	</div>
+	<hr style="width: 670px;">
+	<div>
+		<div>
+			<div class="dduk-title-area">
+				<h2>환자 정보</h2>
+			</div>
+			<div class="dduk-inner-border record-content-fr record-scroll">
+				<div class="patient-info-div">
+					<div class="dduk-row" style="width: 600px; justify-content: space-between;">
+						<h3 class="in-h2" id="paInfoNo">환자번호 : </h3>
+						<h3 class="in-h2" id="paInfoName">이름 : </h3>
+						<h3 class="in-h2" id="paInfoSex">성별 : </h3>
+						<h3 class="in-h2" id="paAge">나이 : </h3>
+					</div>
+					<div class="dduk-row" style="width: 600px; justify-content: space-between;">
+						<h3 class="in-h2" id="paInfoBldType">혈액형 : </h3>
+						<h3 class="in-h2" id="paInfoHeight">키 : </h3>
+						<h3 class="in-h2" id="paInfoWeight">몸무게 : </h3>
+						<h3 class="in-h2" id="paInfoInsrYn">보험여부 : </h3>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="reception-center-div">
+			<div class="dduk-title-area">
+				<h2>진단 내역</h2>
+			</div>
+			<div class="dduk-inner-border" style="height: 520px;">
+			<h3 class="subTitle-margin">진단명 </h3>
+				<input type="text" class="dduck-input clinic-history" style="height: 40px; width: 100%;" readonly="readonly" />
+			<h3 class="subTitle-margin">소견 </h3>
+				<input type="text" class="dduck-input clinic-history clinicOpinion" style="height: 60px; width: 100%;" readonly="readonly" />
+			<!-- 상병부분 -->
+			<div class="d-flex">
+				<h3>상병</h3>
+			</div>
+			<table class="clinic-table injury-list-table">
+				<tr class="tr-padding tr-column">
+					<th class="td-padding gray-text" style="width:60px">코드</th>
+					<th class="td-padding gray-text" style="width:100px">구분</th>
+					<th class="td-padding gray-text" style="width:125px">한글명</th>
+					<th class="td-padding gray-text" style="width:235px">영문명</th>
+					<th class="td-padding gray-text" style="width:80px">발병일</th>
+					<th class="td-padding gray-text" style="width:65px">환부</th>
+				</tr>
+				<tr class="injury-columns">
+					<td id="defaultInjury" colspan="6">상병진단을 추가해주세요</td>
+				</tr>
+			</table>
+			<br>
+			<!-- 처방오더부분 -->
+			<div class="d-flex">
+				<h3>처방오더</h3>
+			</div>
+			<table class="clinic-table injury-list-table">
+				<tr class="tr-padding tr-column">
+					<th class="td-padding gray-text" style="width:60px">코드</th>
+					<th class="td-padding gray-text" style="width:100px">이름</th>
+					<th class="td-padding gray-text" style="width:200px">약품상세</th>
+					<th class="td-padding gray-text" style="width:200px">용법</th>
+					<th class="td-padding gray-text" style="width:100px">처방량</th>
+					<th class="td-padding gray-text" style="width:65px">처방여부</th>
+				</tr>
+				<tr>
+					<td id="defaultMedicine" colspan="6">처방오더을 추가해주세요</td>
+				</tr>
+			</table>
+			<br>
+			
+			<br><br>
+			
+			
+		</div>
+		</div>
+		
+	</div>
+	
+</div>
+	
+<div class="gap-ver-16">
+	<div class="dduk-body-border patient-note" style="width: 550px; height:50%; position: relative;">
+		<div class="dduk-title-area" style="margin-bottom: -20px;">
+			<div class="d-flex align-items-center">
+				<h2 id="in-h2">검사 내역</h2>
+				<span id="paInfo" class="gray-text mar-b-8 mar-l-8"></span>
+			</div>
+		</div>
+		<hr style="width: 500px;">
+		<!-- 검사오더랑 검사 내역이랑 내용 겹쳐서 하나로 합치고 검사오더 자리에 처방오더 넣음  -->
+		<div class="d-flex">
+		</div>
+		<table class="clinic-table test-list-table">
+			<tr class="tr-padding tr-column">
+				<th class="td-padding gray-text" style="width:100px">코드</th>
+				<th class="td-padding gray-text" style="width:150px">검사이름</th>
+				<th class="td-padding gray-text" style="width:150px">검사자</th>
+				<th class="td-padding gray-text" style="width:200px">검사결과</th>
+				<th class="td-padding gray-text" style="width:65px">환부</th>
+			</tr>
+			<tr>
+				<td id="defaultTest" colspan="5">검사오더을 추가해주세요</td>
+			</tr>
+		</table>
+		<br>
+	</div>
+	<div class="dduk-inner-border patient-note" style="width: 550px; height:50%; position: relative;">
+		<div class="dduk-title-area" style="margin-bottom: -20px;">
+			<div class="d-flex align-items-center">
+				<h2 id="in-h2">QR코드</h2>
+				<span id="paInfo" class="gray-text mar-b-8 mar-l-8"></span>
+			</div>
+		</div>
+		<hr style="width: 500px;">
+		<div class="dduk-row">
+			<div class="dduk-inner-border" style="width:300px; height: 300px;">
+				<img id="qrCodeImage" src="" style="margin: 25px 30px;" />
+			</div>
+			<div class="qr-btn-container">
+				<button class="dduk-btn-normal" id="submitBtn" style="margin-right: 10px;" >생성</button>
+				<button class="dduk-btn-normal" id="printBtn" >출력</button>
+			</div>
+		</div>
+		
+	</div>
+</div>
+	
+<!-- 	환자 추가 모달	 -->
+<c:import url="../common/modal.jsp"></c:import>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+<script>
+$(function(){
+	testPatList();
+	console.log("???");
+});
+//이름 등이 글자를 제어하고 싶을 때 maxLength까지만 표시
+function truncateText(text, maxLength) {
+	if (text.length > maxLength) {
+		return text.slice(0, maxLength) + '...';
+	} else {
+	    return text;
+	}
+}
+
+//주민번호를 생년월일로 변환
+function formatResidentNumber(residentNumber) {
+	
+	// 00~39년생은 20을 붙이고 그 외엔 19를 붙인다
+    let year = "";
+    if(Number(residentNumber.substr(0,1)) <= 3){
+    	year += "20";
+    } else {
+    	year += "19";
+    }
+    year += residentNumber.substr(0,2);
+    
+    
+    let month = residentNumber.substr(2,2);
+    let day = residentNumber.substr(4,2);
+    
+    let birthDay = year + "-" + month + "-" + day;
+    return birthDay;
+}
+
+//생일로 만나이 계산
+function getAge(paBirthDay) {
+	
+	// 현재날짜, 생일로 날짜계산
+    const currentDate = new Date();
+    const birthdateDate = new Date(paBirthDay);
+    let age = currentDate.getFullYear() - birthdateDate.getFullYear();
+
+    // 현재와 생일의 월, 날짜 얻어주기
+	const currentMonth = currentDate.getMonth();
+	const birthdateMonth = birthdateDate.getMonth();
+	const currentDay = currentDate.getDate();
+	const birthdateDay = birthdateDate.getDate();
+
+	// 현재 날짜가 생년월일보다 앞 날짜면 아직 생일이 오지 않은 상태임(한살빼기)
+	if (currentMonth <= birthdateMonth && currentDay < birthdateDay) {
+   		age--;
+	}
+
+    return age;
+}
+
+//날짜형식 데이터를 넣으면 yyyy-MM-dd(요일) 로 변환해주는 함수
+function formatDateString(dateString) {
+	// 요일먼저 얻기
+	const week = ['일', '월', '화', '수', '목', '금', '토'];
+	const dayOfWeek = week[new Date(dateString).getDay()];
+	
+	const dateData = new Date(dateString);
+	let year = dateData.getFullYear();
+	let month = dateData.getMonth() + 1; 
+	let date = dateData.getDate()
+	
+	let dateStr = `\${year}-\${month}-\${date}(\${dayOfWeek})`;
+	
+	return dateStr;
+}
+
+// 검사 대기 환자 조회
+function testPatList(){
+	$.ajax({
+		url: '/nurse/getTestPatList',
+		type: 'post',
+		dataType: 'json',
+		beforeSend:function(xhr){
+			xhr.setRequestHeader("${_csrf.headerName}","${_csrf.token}");
+		},
+		success: function(rst){
+			let paInfo = '';
+			
+			$.each(rst, function(index){
+				paInfo += `<tr class="tr-padding tr-paInfo" data-paNo=\${rst[index].paNo} data-hsrpNo={${rst[index].hsrpNo} data-hsrpReason=\${rst[index].hsrpReason} >
+				            <td class="td-padding">\${index + 1}</td>
+				            <td height="48px" class="td-padding">\${truncateText(rst[index].paName, 4)}</td>
+				            <td class="td-padding">\${formatResidentNumber(rst[index].paReg)}</td>
+				            <td class="td-padding" style="width:100px; height:10px;"">
+				`;				
+				
+				// 진료상태코드 가져오기
+				let clinicState = rst[index].clinicState;
+				
+				if(clinicState == null){
+					paInfo += '<button class="dduk-btn-info btn-state">대기중</button>';
+				}
+				if(clinicState == 'CRST01'){
+					paInfo += '<button class="dduk-btn-info btn-state">진료중</button>';
+				}
+				if(clinicState == 'CRST02'){
+					paInfo += '<button class="dduk-btn-normal btn-state">검사중</button>';
+				}
+				
+				paInfo += '</td>';
+				paInfo += '</tr>';
+			});
+			
+			$('#patientTbody').html(paInfo);
+		},
+		error: function(xhr, status, error){
+			console.log('Error:', xhr, status, error);
+		}
+	});
+}
+
+// 목록에서 환자 클릭하면 정보 출력
+$(document).on("click", ".tr-paInfo", function() {
+	// 다른 환자 클릭 시 QR코드 칸 초기화
+	$('#qrCodeImage').attr('src', '');
+	let testType = '';
+	// 클릭한 환자 번호로 DB 조회용 변수 생성
+	let paNo = $(this).data('pano');
+	let paData = {"paNo" : paNo};
+	
+	// 환자 선택한 상태에서 QR코드 칸 '생성' 버튼 클릭 시 환자 번호 토대로 QR코드 생성
+	$('#submitBtn').on('click', function(){
+		console.log(paNo);
+		data = {url : paNo};
+			
+		$.ajax({
+	        url: '/nurse/getQRcode',
+	        data: data,
+	        type: 'post',
+	        beforeSend:function(xhr){
+				xhr.setRequestHeader("${_csrf.headerName}","${_csrf.token}");
+			},
+	        success: function (data) {
+	        	console.log('성공');
+	        	console.log(data.base64Encoded);
+	        	
+	        	$('#qrCodeImage').attr('src', 'data:image/png;base64,' + data.base64Encoded);
+	        	
+	        },
+	        error: function (error) {
+	            console.error('실패');
+	            console.log(error);
+	        }
+	    });
+	});
+	
+	// 클릭한 환자 상세정보 목록 옆 화면에 분야별 출력
+	$.ajax({
+		url: '/nurse/getTestPatDetail',
+		data: paData,
+		dataType: 'json',
+		type: 'post',
+		beforeSend:function(xhr){
+			xhr.setRequestHeader("${_csrf.headerName}","${_csrf.token}");
+		},
+		success: function(rst){
+			
+			$(".in-h2").empty();
+			console.log("특정 환자의 진료VO 리스트 : ", rst);
+			
+			// 환자 정보 출력
+			let paBirthDay = formatResidentNumber(rst.paReg);
+			let paAge = getAge(paBirthDay);
+			
+			$('#paInfoNo').html("환자번호 : " + rst.paNo);
+			$('#paInfoName').html("이름 : " + rst.paName);
+			$('#paInfoSex').html("성별 : " + rst.paSex);
+			$('#paAge').html("나이 : " + paAge+"세("+paBirthDay+")");
+			$('#paInfoBldType').html("혈액형:" + rst.paBldType + "형");
+			$('#paInfoHeight').html("키 : " + rst.paHeight + "cm");
+			$('#paInfoWeight').html("몸무게 : " + rst.paWeight + "kg");
+			if(rst.paInsrYn == 'ISYN01'){
+				$('#paInfoInsrYn').html("보험여부 : 보유");
+			} else {
+				$('#paInfoInsrYn').html("보험여부 : 미보유");
+			}
+			
+			// 진단명, 소견 출력
+			$('input[type="text"]').val(rst.clinicChartVOList[0].clinicInjnm);
+			$(".clinicOpinion").val(rst.clinicChartVOList[0].clinicOpinion);
+			
+			// 상병 출력
+			$("#defaultInjury").empty();
+			let ijCont = '';
+			$.each(rst, function(index){
+				ijCont = `
+				<tr class="tr-padding tr-data">
+					<td class="td-padding-data gray-text" style="width:60px">\${rst[index].clinicChartVOList[0].injuryDiagnosisVOList[0].ijCd}</td>
+					<td class="td-padding-data gray-text" style="width:100px">\${rst[index].clinicChartVOList[0].injuryDiagnosisVOList[0].indiTypeNm}</td>
+					<td class="td-padding-data gray-text" style="width:125px">\${rst[index].clinicChartVOList[0].injuryDiagnosisVOList[0].injuryVO.ijNm}</td>
+					<td class="td-padding-data gray-text" style="width:235px">\${rst[index].clinicChartVOList[0].injuryDiagnosisVOList[0].injuryVO.ijEnm}</td>
+					<td class="td-padding-data gray-text" style="width:100px">\${rst[index].clinicChartVOList[0].injuryDiagnosisVOList[0].indiDt}</td>
+					<td class="td-padding-data gray-text" style="width:65px">\${rst[index].clinicChartVOList[0].injuryDiagnosisVOList[0].injuryBodyCdNm}</td>
+				</tr>`;
+			});
+			
+			$("#defaultInjury").append(ijCont);
+			
+			// 처방 출력
+			let mdUse1 = rst.clinicChartVOList[0].medicineOrderVOList[0].mdodDay;
+			let mdUse2 = rst.clinicChartVOList[0].medicineOrderVOList[0].mdodPer;
+			let mdUse3 = rst.clinicChartVOList[0].medicineOrderVOList[0].mdodDose;
+			
+			$("#defaultMedicine").empty();
+			let mdCont = `
+				<tr class="tr-padding tr-data">
+					<td class="td-padding-data gray-text" style="width:60px">\${rst.clinicChartVOList[0].medicineOrderVOList[0].mediCd}</td>
+					<td class="td-padding-data gray-text" style="width:100px">\${rst.clinicChartVOList[0].medicineOrderVOList[0].medicineVO.mediNm}</td>
+					<td class="td-padding-data gray-text" style="width:200px">\${rst.clinicChartVOList[0].medicineOrderVOList[0].medicineVO.mediDetail}</td>
+					<td class="td-padding-data gray-text" style="width:235px">\${mdUse1}일 \${mdUse2}회 \${mdUse3}정 </td>
+					<td class="td-padding-data gray-text" style="width:100px">\${rst.clinicChartVOList[0].medicineOrderVOList[0].mdodQt}</td>
+					<td class="td-padding-data gray-text" style="width:65px"><input type="checkbox" /></td>
+				</tr>`;
+			$("#defaultMedicine").append(mdCont);
+			
+			// 검사 출력
+			$("#defaultTest").empty();
+			// 값 입력하는 검사인지 파일 첨부하는 검사인지 구분
+			let testCd = rst.clinicChartVOList[0].testOrderVOList[0].testCd;
+			
+			if(testCd == 'TEST001' || testCd == 'TEST003' || testCd == 'TEST007' ){
+				testType += "<input type='text' class='dduck-input clinic-history' style='height: 20px;' placeholder='결과 입력' />";
+			} else {
+				testType += `
+					<div class="custom-file">
+						<label for="uploadFile">
+							 <div type="button" class="dduk-btn-normal button-margin">파일</div>
+						</label>
+						<input type="file" class="dduk-login-input" name="uploadFile" id="uploadFile" style="display:none;" /> 
+					</div>
+				`;
+			}
+		
+			let testCont = `
+				<tr class="tr-padding tr-data">
+					<td class="td-padding-data gray-text" style="width:100px">\${testCd}</td>
+					<td class="td-padding-data gray-text" style="width:140px">\${rst.clinicChartVOList[0].testOrderVOList[0].testVO.testNm}</td>
+					<td class="td-padding-data gray-text" style="width:150px">\${rst.nowEmpNo}</td>
+					<td class="td-padding-data gray-text" style="width:210px">\${testType}</td> // 검사결과 입력창
+					<td class="td-padding-data gray-text" style="width:65px">\${rst.clinicChartVOList[0].testOrderVOList[0].testOrderBodyCdNm}</td>
+				</tr>`;
+			$("#defaultTest").append(testCont);
+		},
+		error: function(xhr, status, error){
+			console.log('Error:', xhr, status, error);
+		}
+	});
+});
+
+
+</script> 

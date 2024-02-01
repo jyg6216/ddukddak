@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.dduk.mapper.PayMapper">
+	
+	<!-- DB에서 수납리스트 전체를 가져옴 -->
+	<select id="getPayList" resultMap="payMap">
+		SELECT 
+		    P.PA_NAME,
+		    P.PA_PH,
+		    P.PA_INSR_YN,
+		    PY.PAY_NO,
+		    PY.PAY_STATE,
+		    PY.PAY_TOTALMN,
+		    PY.PAY_STDT,
+		    PR.PR_NO,
+		    PR.PR_PAYMN
+		FROM PATIENT P
+		JOIN PAY PY ON P.PA_NO = PY.PA_NO
+		LEFT JOIN PAY_RECORD PR ON PY.PAY_NO = PR.PAY_NO
+		ORDER BY PY.PAY_NO DESC
+	</select>
+	
+	<!-- DB에 PAY테이블 넣음 -->
+	<insert id="insertPay" parameterType="payVO">
+		<selectKey resultType="String" order="BEFORE" keyProperty="payNo">
+			SELECT 'PY' || NVL(TRIM(TO_CHAR(SUBSTR(MAX(PAY_NO), 3) + 1, '0000')), '0001') AS PAY_NO FROM PAY
+		</selectKey>
+		INSERT INTO (PAY_NO, PA_NO, CLINIC_NO, ADMI_NO, PAY_STATE, PAY_TOTALMN, PAY_STDT)
+		VALUES (#{payNo}, #{paNo}, #{clinicNo}, #{admiNo}, 'PMYN01', #{payTotalnm}, sysdate)
+	</insert>
+	
+	<!-- DB에 RECEIPT테이블 넣음 -->
+	<insert id="insertReceipt" parameterType="receiptVO">
+		<selectKey resultType="String" order="BEFORE" keyProperty="payNo">
+			SELECT 'RC' || NVL(TRIM(TO_CHAR(SUBSTR(MAX(PAY_NO), 3) + 1, '0000')), '0001') AS PAY_NO FROM PAY
+		</selectKey>
+		INSERT INTO (PAY_NO, PA_NO, CLINIC_NO, ADMI_NO, PAY_STATE, PAY_TOTALMN, PAY_STDT)
+		VALUES (#{payNo}, #{paNo}, #{clinicNo}, #{admiNo}, 'PMYN01', #{payTotalnm}, sysdate)
+	</insert>
+	
+	<!-- 수납 resultMap -->
+	<resultMap type="payVO" id="payMap">
+		<result property="payNo" column="PAY_NO"/>
+		<result property="paNo" column="PA_NO"/>
+		<result property="clinicNo" column="CLINIC_NO"/>
+		<result property="admiNo" column="ADMI_NO"/>
+		<result property="payState" column="PAY_STATE"/>
+		<result property="payTotalmn" column="PAY_TOTALMN"/>
+		<result property="payStdt" column="PAY_STDT"/>
+		
+		<association property="patientVO" resultMap="patientMap" />
+		<association property="receiptVO" resultMap="receiptMap" />
+		<collection property="payRecordVOList" resultMap="payRecordMap" />
+	</resultMap>
+	
+	<!-- 수납기록 resultMap -->
+	<resultMap type="payRecordVO" id="payRecordMap">
+		<result property="prNo" column="PR_NO"/>
+		<result property="payNo" column="PAY_NO"/>
+		<result property="prPaydt" column="PR_PAYDT"/>
+		<result property="prPaytype" column="PR_PAYTYPE"/>
+		<result property="prPaymn" column="PR_PAYMN"/>
+	</resultMap>
+	
+	<!-- 영수증 resultMap -->
+	<resultMap type="receiptVO" id="receiptMap">
+		<result property="payNo" column="PAY_NO"/>
+		<result property="rctClinic" column="RCT_CLINIC"/>
+		<result property="rctAdmi" column="RCT_ADMI"/>
+		<result property="rctDiet" column="RCT_DIET"/>
+		<result property="rctAct" column="RCT_ACT"/>
+		<result property="rctMedi" column="RCT_MEDI"/>
+		<result property="rctAnes" column="RCT_ANES"/>
+		<result property="rctSurgery" column="RCT_SURGERY"/>
+		<result property="rctTest" column="RCT_TEST"/>
+		<result property="rctVideo" column="RCT_VIDEO"/>
+		<result property="rctMedidev" column="RCT_MEDIDEV"/>
+		<result property="rctRadio" column="RCT_RADIO"/>
+		<result property="rctPhysic" column="RCT_PHYSIC"/>
+		<result property="rctBlood" column="RCT_BLOOD"/>
+		<result property="rctCt" column="RCT_CT"/>
+		<result property="rctMri" column="RCT_MRI"/>
+		<result property="rctPet" column="RCT_PET"/>
+		<result property="rctUltra" column="RCT_ULTRA"/>
+		<result property="rctPros" column="RCT_PROS"/>
+		<result property="rctEtc" column="RCT_ETC"/>
+		<result property="rctTotal" column="RCT_TOTAL"/>
+	</resultMap>
+	
+	<!-- 환자정보 resultMap -->
+	<resultMap type="patientVO" id="patientMap">
+		<result property="paNo" column="PA_NO"/>
+		<result property="paReg" column="PA_REG"/>
+		<result property="paName" column="PA_NAME"/>
+		<result property="paSex" column="PA_SEX"/>
+		<result property="paPh" column="PA_PH"/>
+		<result property="paAdd1" column="PA_ADD1"/>
+		<result property="paAdd2" column="PA_ADD2"/>
+		<result property="pzZip" column="PZ_ZIP"/>
+		<result property="paNoknm" column="PA_NOKNM"/>
+		<result property="paNokph" column="PA_NOKPH"/>
+		<result property="paBldType" column="PA_BLD_TYPE"/>
+		<result property="paInsrYn" column="PA_INSR_YN"/>
+		<result property="paAdmDt" column="PA_ADM_DT"/>
+		<result property="paHeight" column="PA_HEIGHT"/>
+		<result property="paWeight" column="PA_WEIGHT"/>
+	</resultMap>
+</mapper>

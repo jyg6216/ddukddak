@@ -1,0 +1,54 @@
+package kr.or.dduk.clinic.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import kr.or.dduk.clinic.service.RoundsService;
+import kr.or.dduk.mapper.RoundsMapper;
+import kr.or.dduk.vo.AdmissionChartVO;
+import kr.or.dduk.vo.ClinicChartVO;
+import kr.or.dduk.vo.PatientVO;
+
+@Service
+public class RoundsServiceImpl implements RoundsService {
+
+	
+	@Autowired
+	RoundsMapper roundsMapper;
+	
+	
+	/**
+	 * 회진 페이지 에서 과거 입원내역 리스트를 뽑아오기 위한 메서드
+	 * @param paNo 환자번호
+	 * @return 과거 입원내역 리스트
+	 */
+	@Override
+	public List<AdmissionChartVO> simpleAdmissionChartList(String paNo){
+		return this.roundsMapper.simpleAdmissionChartList(paNo);
+	}
+	
+	
+	/**
+	 * 회진 페이지에서 과거 입원내역 리스트중 특정 입원 클릭시 실행되는 메서드
+	 * 해당 입원에서 받은 심플 회진 리스트를 받아옴
+	 * @param admiNo 입원번호
+	 * @return 회진내역 리스트
+	 */
+	@Override
+	public AdmissionChartVO simpleRoundsChartList(String admiNo) {
+		return this.roundsMapper.simpleRoundsChartList(admiNo);
+	}
+	
+	
+	/**
+	 * 회진 페이지에서 현재 입원 정보와 현재 입원에서 실행한 모든 회진 정보를 가져와서 리스트로 만들어줌
+	 * @param admiNo 입원번호
+	 * @return 입원일, 예상퇴원일, 담당의, 진료날짜 진료상태 진료코드만 
+	 */
+	@Override
+	public AdmissionChartVO currentSimpleAdmissionChartList(String admiNo) {
+		return this.roundsMapper.currentSimpleAdmissionChartList(admiNo);
+	}
+}

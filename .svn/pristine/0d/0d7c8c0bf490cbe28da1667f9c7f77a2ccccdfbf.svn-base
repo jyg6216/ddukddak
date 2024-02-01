@@ -1,0 +1,219 @@
+function updateRoundsChart() {
+		let cont = `
+			<div class="dduk-body-border rounds-chart">
+			<div class="dduk-title-area rounds-chart-head">
+				<div class="d-flex">
+					<h2>회진 차트</h2>
+					<img id="undoRoundsChart" class="icon-undo" src="/resources/images/icons/undo.png">
+				</div>
+			</div>
+			<div class="rounds-chart-body-top">
+				<div class="calendar-wrap">
+					
+					<div class="dduk-row">
+						<img class="icon-stethoscope" src="/resources/images/icons/stethoscope.png">
+						<div class="date-wrap">
+							<div>담당의사</div>
+							<div class="empName">김영남</div>
+						</div>
+					</div>
+				
+					<div class="dduk-row">
+						<img class="icon-calendar" src="/resources/images/icons/calendar.png">
+						<div class="date-wrap">
+							<div>입원일</div>
+							<div class="inDt">2023-11-10</div>
+						</div>
+					</div>
+					
+					<div class="dduk-row">
+						<img class="icon-calendar" src="/resources/images/icons/calendar.png">
+						<div class="date-wrap">
+							<div>퇴원예정일</div>
+							<div class="expOutDt">2023-11-11</div>
+						</div>
+					</div>
+					
+				</div>
+			</div>
+			<div class="d-flex rounds-chart-body-cont">
+				<div class="rounds-chart-list">
+					<svg id="createRoundsChart" type="button" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+						<g clip-path="url(#clip0_142_1638)">
+						<path d="M18 13H13V18C13 18.55 12.55 19 12 19C11.45 19 11 18.55 11 18V13H6C5.45 13 5 12.55 5 12C5 11.45 5.45 11 6 11H11V6C11 5.45 11.45 5 12 5C12.55 5 13 5.45 13 6V11H18C18.55 11 19 11.45 19 12C19 12.55 18.55 13 18 13Z" fill="#8D9EA5"></path>
+						</g>
+						<defs>
+						<clipPath id="clip0_142_1638">
+						<rect width="24" height="24" fill="white"></rect>
+						</clipPath>
+						</defs>
+					</svg>
+				</div>
+				
+				<div class="rounds-chart-detail">
+					<h2>회진차트 작성</h2>
+					<div class="rounds-chart-detail-inner-border">
+						<h3>회진기록</h3>
+						<textarea id="clinicOpinion" class="dduck-input"></textarea>
+						
+						<br><br><br>
+						
+						<div class="d-flex">
+							<h3>검사오더</h3>
+							<svg class="btn-order-modal" data-type="test" type="button" data-bs-toggle="modal" data-bs-target="#createOrderModal" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+								<g clip-path="url(#clip0_142_1638)">
+								<path d="M18 13H13V18C13 18.55 12.55 19 12 19C11.45 19 11 18.55 11 18V13H6C5.45 13 5 12.55 5 12C5 11.45 5.45 11 6 11H11V6C11 5.45 11.45 5 12 5C12.55 5 13 5.45 13 6V11H18C18.55 11 19 11.45 19 12C19 12.55 18.55 13 18 13Z" fill="#8D9EA5"></path>
+								</g>
+								<defs>
+								<clipPath id="clip0_142_1638">
+								<rect width="24" height="24" fill="white"></rect>
+								</clipPath>
+								</defs>
+							</svg>
+							<img id="trashbinTest" class="icon-trashbin" src="/resources/images/icons/trashbin.png">
+						</div>
+						<table class="rounds-table test-order-table">
+							<thead>
+								<tr class="tr-padding tr-column">
+									<th class="td-padding gray-text" style="width: 25%">검사명</th>
+									<th class="td-padding gray-text" style="width: 60%">검사결과</th>
+									<th class="td-padding gray-text" style="width: 15%">환부</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr class="tr-padding tr-data">
+									<td class="td-padding-data gray-text" style="padding: 1%">진짜개아픈검사</td>
+									<td class="td-padding-data gray-text">진짜몸에큰일이났음</td>
+									<td class="td-padding-data gray-text">발바닥</td>
+								</tr>
+								<tr class="tr-padding tr-data">
+									<td class="td-padding-data gray-text" style="padding: 1%">개재밌는검사</td>
+									<td class="td-padding-data gray-text">괜츊함</td>
+									<td class="td-padding-data gray-text">동공</td>
+								</tr>
+							</tbody>
+						</table>
+						
+						<br><br>
+						
+						<div class="d-flex">
+							<h3>처방오더</h3>
+							<svg class="btn-order-modal" data-type="medicine" type="button" data-bs-toggle="modal" data-bs-target="#createOrderModal" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+								<g clip-path="url(#clip0_142_1638)">
+								<path d="M18 13H13V18C13 18.55 12.55 19 12 19C11.45 19 11 18.55 11 18V13H6C5.45 13 5 12.55 5 12C5 11.45 5.45 11 6 11H11V6C11 5.45 11.45 5 12 5C12.55 5 13 5.45 13 6V11H18C18.55 11 19 11.45 19 12C19 12.55 18.55 13 18 13Z" fill="#8D9EA5"></path>
+								</g>
+								<defs>
+								<clipPath id="clip0_142_1638">
+								<rect width="24" height="24" fill="white"></rect>
+								</clipPath>
+								</defs>
+							</svg>
+							<img id="trashbinMedicine" class="icon-trashbin" src="/resources/images/icons/trashbin.png">
+						</div>
+						<table class="rounds-table medicine-order-table">
+							<thead>
+								<tr class="tr-padding tr-column">
+									<th class="td-padding gray-text" style="width: 25%">약품명</th>
+									<th class="td-padding gray-text" style="width: 30%">약품상세</th>
+									<th class="td-padding gray-text" style="width: 30%">용법</th>
+									<th class="td-padding gray-text" style="width: 15%">처방량</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr class="tr-padding tr-data">
+									<td class="td-padding-data gray-text" style="padding: 1%">이부프로펜</td>
+									<td class="td-padding-data gray-text">진자엄청아픈주사</td>
+									<td class="td-padding-data gray-text">
+										<input type="number" class="medicine-order-day">일 
+										<input type="number" class="medicine-order-per">회 
+										<input type="number" class="medicine-order-dose">정
+									</td>
+									<td class="td-padding-data gray-text">
+										<input type="number" class="medicine-order-qt">일분
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						
+						<br><br>
+						
+						<div class="d-flex">
+							<h3>치료오더</h3>
+							<svg class="btn-order-modal" data-type="treatment" type="button" data-bs-toggle="modal" data-bs-target="#createOrderModal" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+								<g clip-path="url(#clip0_142_1638)">
+								<path d="M18 13H13V18C13 18.55 12.55 19 12 19C11.45 19 11 18.55 11 18V13H6C5.45 13 5 12.55 5 12C5 11.45 5.45 11 6 11H11V6C11 5.45 11.45 5 12 5C12.55 5 13 5.45 13 6V11H18C18.55 11 19 11.45 19 12C19 12.55 18.55 13 18 13Z" fill="#8D9EA5"></path>
+								</g>
+								<defs>
+								<clipPath id="clip0_142_1638">
+								<rect width="24" height="24" fill="white"></rect>
+								</clipPath>
+								</defs>
+							</svg>
+							<img id="trashbinTreatment" class="icon-trashbin" src="/resources/images/icons/trashbin.png">
+						</div>
+						<table class="rounds-table treatment-order-table">
+							<thead>
+								<tr class="tr-padding tr-column">
+									<th class="td-padding gray-text" style="width: 85%">치료명</th>
+									<th class="td-padding gray-text" style="width: 15%">환부</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr class="tr-padding tr-data">
+									<td class="td-padding-data gray-text" style="padding: 1%">진짜재밌는치료</td>
+									<td class="td-padding-data gray-text">무릎</td>
+								</tr>
+							</tbody>
+						</table>
+						
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="nurse-wrap">
+		
+			<div class="dduk-body-border nurse-chart">
+				<div class="dduk-title-area nurse-chart-head">
+					<h2>간호 차트</h2>
+					<input type="text" name="datepicker-nurse-chart" id="datepickerNurseChart" style="display: none">
+				</div>
+				<div class="nurse-chart-body">
+					<div class="nurse-chart-list">
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+						<div class="nurse-chart-list-date">2021-05-07 오후 6시 30분</div>
+					</div>
+	<!-- 				<div class="nurse-chart-detail"> -->
+	<!-- 					<div class="nurse-chart-writer">작성자 : 김영남</div> -->
+	<!-- 					<textarea class="dduck-input nurse-chart-cont" readonly="readonly" ></textarea> -->
+	<!-- 				</div> -->
+				</div>
+			</div>
+			
+			<div class="nurse-record-tab">
+				<div class="nurse-record-element">바이탈</div>
+				<div class="nurse-record-element tab-active">IO</div>
+				<div class="nurse-record-element tab-active">식이</div>
+			</div>
+			<div class="dduk-body-border nurse-record">
+				<div class="nurse-record-body">ㅑㅐ</div>
+			</div>
+			
+		</div>
+		`;
+		
+		$('.rounds-right-wrap').html(cont);
+	}

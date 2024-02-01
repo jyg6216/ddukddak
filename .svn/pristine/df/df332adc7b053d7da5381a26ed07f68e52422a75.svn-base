@@ -1,0 +1,28 @@
+package kr.or.dduk.nurse.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import kr.or.dduk.mapper.NurseTestMapper;
+import kr.or.dduk.nurse.service.NurseTestService;
+import kr.or.dduk.vo.PatientVO;
+
+@Service
+public class NurseTestServiceImpl implements NurseTestService{
+	
+	@Autowired
+	NurseTestMapper nurseTestMapper;
+
+	@Override
+	public List<PatientVO> getTestPatList() {
+		return this.nurseTestMapper.getTestPatList();
+	}
+
+	@Override
+	public PatientVO getTestPatDetail(String paNo) {
+		return this.nurseTestMapper.getTestPatDetail(paNo);
+	}
+
+}

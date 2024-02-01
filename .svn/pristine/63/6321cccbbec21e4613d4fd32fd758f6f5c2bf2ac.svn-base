@@ -1,0 +1,11 @@
+package kr.or.dduk.vo;
+
+import lombok.Data;
+
+@Data
+public class AdmissionRoomVO {
+	private String adrmRoomNo;	//호수
+	private String adrmBedNo;	//병상번호
+	private int adrmPrice;	//가격
+	private String paNo;	//환자번호
+}

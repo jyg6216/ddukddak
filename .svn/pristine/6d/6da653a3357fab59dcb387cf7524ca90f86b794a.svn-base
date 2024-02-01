@@ -1,0 +1,50 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<style>
+
+.chart-body {
+	height: 840px;
+	width: 75%;
+}
+
+.dduk-title-area {
+	border-bottom: 1px solid #EBEFF0;
+    margin-left: -18px;
+    width: 1195px;
+}
+
+.chart-category {
+	display: flex;
+    justify-content: flex-start;
+}
+
+.category-tab {
+    margin-right: 20px;
+    border-bottom: 3px solid var(--ci-01, #fff);
+    margin-left: 10px;
+}
+
+.category-selected {
+	border-bottom: 3px solid var(--ci-01, #0ABAB5);
+}
+
+</style>
+
+<div class="dduk-inner-border chart-body">
+	<div class="dduk-title-area chart-category">
+		<h2 class="category-tab category-selected">&nbsp;진료통계</h2>
+		<h2 class="category-tab">입원통계</h2>
+	</div>
+</div>
+
+<script>
+$(function(){
+	
+	// 카테고리 클릭 이벤트
+	$(document).on('click', '.category-tab', function(){
+		$('.category-tab').removeClass('category-selected');
+		$(this).addClass('category-selected');
+	});
+})
+</script>

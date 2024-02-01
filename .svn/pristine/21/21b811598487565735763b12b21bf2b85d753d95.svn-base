@@ -1,0 +1,12 @@
+package kr.or.dduk.vo;
+
+import lombok.Data;
+
+@Data
+public class ProofApplicationVO {
+	private String prapNo;
+	private String clinicNo;
+	private String prdcCd;
+	private String prapCont;
+	private String atchFileCd;
+}

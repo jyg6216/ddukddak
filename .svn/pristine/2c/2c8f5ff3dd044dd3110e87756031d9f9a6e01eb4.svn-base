@@ -1,0 +1,5 @@
+package kr.or.dduk.ams.service;
+
+public interface StatisticsService {
+
+}

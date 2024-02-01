@@ -1,0 +1,22 @@
+package kr.or.dduk.clinic.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import kr.or.dduk.clinic.service.RoundsService;
+import kr.or.dduk.mapper.RoundsMapper;
+import kr.or.dduk.vo.PatientVO;
+
+@Service
+public class RoundsServiceImpl implements RoundsService {
+
+	@Autowired
+	RoundsMapper roundsMapper;
+	
+	@Override
+	public PatientVO simpleAdmissionChartList(String paNo){
+		return this.roundsMapper.simpleAdmissionChartList(paNo);
+	}
+}

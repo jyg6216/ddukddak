@@ -1,0 +1,22 @@
+package kr.or.dduk.mapper;
+
+import java.util.List;
+import java.util.Map;
+
+import kr.or.dduk.vo.DocScheduleVO;
+
+public interface CalendarMapper {
+
+	public int createSch(DocScheduleVO docScheduleVO);
+
+	public int deleteSch(String dsNo);
+
+	public List<DocScheduleVO> schList(Map<String, Object> map);
+
+	public DocScheduleVO selectSch(String dsNo);
+
+	public int updateSch(DocScheduleVO docScheduleVO);
+
+
+
+}

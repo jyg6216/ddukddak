@@ -1,0 +1,59 @@
+package kr.or.dduk.nurse.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.dduk.ams.service.HospitalReceptionService;
+import kr.or.dduk.nurse.service.NurseTestService;
+import kr.or.dduk.vo.PatientVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/nurse")
+public class nurseTestController {
+	
+	@Autowired
+	NurseTestService nurseTestService; 
+	
+	@GetMapping("/test")
+	public String main() {
+		return "nurse/nurseTest";
+	}
+	
+	/**
+	 * 검사 대기 환자 목록 가져오기
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/getTestPatList")
+	public List<PatientVO> getTestPatList() {
+		List<PatientVO> patientVOList = this.nurseTestService.getTestPatList();
+		log.info("getTestPatList->patientVOList : " + patientVOList );
+		
+		return patientVOList;
+	}
+	
+	/**
+	 * 목록에서 선택한 환자 정보 가져오기
+	 * @param patientVO
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/getTestPatDetail")
+	public PatientVO getTestPatDetail(String paNo) {
+		log.info("getTestPatDetail->paNo : " + paNo );
+		
+		PatientVO slctPatientVO = this.nurseTestService.getTestPatDetail(paNo);
+		log.info("getTestPatDetail->slctPatientVO : " + slctPatientVO );
+		
+		return slctPatientVO;
+	}
+}

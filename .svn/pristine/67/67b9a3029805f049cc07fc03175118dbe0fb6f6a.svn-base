@@ -1,0 +1,349 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<script type="text/javascript" src="/resources/js/jquery.min.js"></script>
+<style>
+/* 1592 */
+th{
+	font-size:1.2em;
+	text-align: center;
+}
+td{
+	text-align: center;
+}
+.left-div{
+	width: 984px;
+}
+.right-div{
+	width: 592px;
+}
+.search{
+	background-image: url(/resources/images/Search.png);
+	background-repeat: no-repeat;
+	background-position: 260px center;
+	width: 312px;
+	height: 36px;
+	margin-left: 8px;
+}
+.container {
+	display: flex;
+	justify-content: space-between;
+}
+.number, .order{
+	text-align: right;
+}
+.dduck-input{
+	width: 70px;
+	height: 25px;
+}
+.total{
+	border-top: 2px solid #D5D9DB;
+	height: 80px;
+	display: flex;
+	align-items: center;
+}
+.container{
+	align-items: center;
+}
+.dduk-row{
+	margin-bottom: 10px;
+}
+#total-price{
+    width: 380px;
+    height: 35px;
+   	margin-top: 1.5px;
+   	text-align: right;
+   	font-size: 1.5em;
+ 	padding-right: 16px;
+}
+#total-span{
+	font-size: 1.8em;
+}
+</style>
+<body>
+	<div class="dduk-body-border left-div">
+		<div class="dduk-row" style="margin-left: 10px;">
+			<div id="inner-tab1" class="inventory" style="border-bottom: 3px solid var(--ci-01, #0ABAB5);"><h1>재고현황</h1></div>
+			<div id="inner-tab2" class="order"><h1>발주 리스트</h1></div>
+			<input type="text" class="dduck-input search" id="search" 
+			style="width: 300px; height: 30px; margin-bottom: 15px;"/>
+		</div>
+		<div class="card-body table-responsive p-0" style="height: 760px;">
+	           <table class="table table-head-fixed text-nowrap"  id="inventory-table">
+				<thead style="position:sticky; top: 0;  background-color: #fff;">
+					<tr class="tr-padding">
+						<th><input type="checkbox" id="check-all-item"/> 전체</th>
+						<th>약품코드</th>
+						<th>분류</th>
+						<th>약품명</th>
+						<th>제조사</th>
+						<th>상세</th>
+						<th>함량</th>
+						<th>재고</th>
+						<th>가격</th>
+						<th>보험적용</th>
+					</tr>
+				</thead>
+				
+				<tbody>
+					<c:forEach var="medicine" items="${medicineVOList}">
+					<tr>
+						<td><input type="checkbox" class="inventory-check"/></td>
+						<td>${medicine.mediCd}</td>
+						<td>${medicine.mediType}</td>
+						<td>${medicine.mediNm}</td>
+						<td>${medicine.mediMaker}</td>
+						<td>${medicine.mediDetail}</td>
+						<td class="number"><fmt:formatNumber value="${medicine.mediCont}" pattern="#,##0"/> cc</td>
+						<td class="number"><fmt:formatNumber value="${medicine.mediStock}" pattern="#,##0" /></td>
+						<td class="number"><fmt:formatNumber value="${medicine.mediPrice}" pattern="#,##0" /></td>
+						<c:choose>
+							<c:when test="${medicine.insuYn=='INYN01'}">
+								<td class="inyn">O</td>
+							</c:when>
+							<c:otherwise>
+								<td class="inyn">X</td>
+							</c:otherwise>
+						</c:choose>
+					</tr>
+					</c:forEach>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	
+	<div class="dduk-body-border right-div">
+		<div class="container dduk-row">
+			<h1>발주서</h1>
+		</div>
+		<div class="card-body table-responsive p-0" style="height: 700px;">
+			<table class="table table-head-fixed text-nowrap" id="order-table">
+				<thead style="position:sticky; top: 0;  background-color: #fff;">
+					<tr class="tr-padding">
+						<th>약품코드</th>
+						<th>약품명</th>
+						<th>제조사</th>
+						<th>가격</th>
+						<th>수량</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>
+			<div class="total">
+				<div class="container">
+				<span id="total-span">합계 :</span><input type="text" class="dduck-input" id="total-price" disabled/>
+				<button class="dduk-btn-active" style="height: 35px;">신청</button>
+				</div>
+			</div>
+	</div>
+<script>
+
+// inventory check 클래스 요소를 변수에 담기 (HTML Collection 형태라서 포문써야됨)
+const inventoryChecks = document.querySelectorAll('.inventory-check');
+// table 요소 변수에 담기
+const orderTable = document.getElementById('order-table');
+const inventoryTable = document.getElementById('inventory-table');
+// 체크박스 변수에 담기
+const checkAllItem = document.getElementById('check-all-item');
+
+checkAllItem.addEventListener('change', function() {
+    if (checkAllItem.checked) {
+        // 재고 테이블의 체크박스들을 모두 선택하고 발주로 옮기기
+        for (let i = 0; i < inventoryChecks.length; i++) {
+            inventoryChecks[i].checked = true;
+
+            // 체크된 행을 발주 테이블로 옮기기
+            let inventoryRow = inventoryChecks[i].closest('tr');
+            let cells = inventoryRow.cells;
+            let newRow = orderTable.insertRow();
+
+            for (let j = 0; j < cells.length; j++) {
+                if (j === 1 || j === 3 || j === 4 || j === 8 || j === 9) {
+                    let newCell = newRow.insertCell();
+
+                    if (j === 9) {
+                        let inputElement = document.createElement('input');
+                        inputElement.type = 'text';
+                        inputElement.value = '';
+                        inputElement.className = 'dduck-input order';
+                        newCell.appendChild(inputElement);
+                    } else {
+                        newCell.innerHTML = cells[j].innerHTML;
+                    }
+                }
+            }
+        }
+    }else if(!checkAllItem.checked){
+   		//모든 체크박스 해제
+   		var checkboxes = document.getElementsByTagName('input');
+   		for (var i = 0; i < checkboxes.length; i++) {
+   		    if (checkboxes[i].type === 'checkbox') {
+   		        checkboxes[i].checked = false;
+   		    }
+   		}
+   		
+   		let rows = orderTable.getElementsByTagName('tr');
+
+   		// 마지막 행부터 역순으로 삭제
+   		for (let i = rows.length - 1; i >= 1; i--) {
+   		    let row = rows[i];
+   		    row.parentNode.removeChild(row);
+   		}
+    }
+});
+
+// 각 체크박스가 체크되면 재고=>발주로 복사되고, 체크해제되면 발주에서 삭제
+inventoryChecks.forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            // 체크되었을 때 해당 요소를 옮깁니다.
+            let row = this.closest('tr').cloneNode(true);
+            
+            //발주 테이블에 없는 td 제거를 위해 담기
+            let checkbox = row.querySelector('td:nth-child(1)');
+            let type = row.querySelector('td:nth-child(3)');
+            let detail = row.querySelector('td:nth-child(6)');
+            let cont = row.querySelector('td:nth-child(7)');
+            let stock = row.querySelector('td:nth-child(8)');
+            let insr = row.querySelector('td:nth-child(10)');
+            
+            //td 제거하기
+            row.removeChild(checkbox);
+            row.removeChild(type);
+            row.removeChild(detail);
+            row.removeChild(cont);
+            row.removeChild(stock);
+            row.removeChild(insr);
+            
+            //input태그
+            let inputElement = document.createElement('input');
+            inputElement.type = 'text'; // 원하는 input 타입으로 설정
+            inputElement.value = ''; // 원하는 기본값 설정
+            inputElement.classList.add('dduck-input');
+            inputElement.classList.add('order');
+            
+            let newCell = row.insertCell();
+            newCell.appendChild(inputElement);
+            
+            var fourthChild = row.querySelector(":nth-child(6)");
+            row.insertBefore(newCell, fourthChild);
+            
+            orderTable.appendChild(row);
+        }else{
+        	// 체크 해제 되었을 때
+        	let row = this.closest('tr');
+        	
+			let rows = orderTable.getElementsByTagName('tr');
+			
+			for (let i = 1; i < rows.length; i++) {
+			    let currentRow = rows[i];
+			    let secondTDInOrderTable = currentRow.querySelector('td:nth-child(1)');
+			    if (row.querySelector('td:nth-child(2)').innerText === secondTDInOrderTable.innerText) {
+			        currentRow.remove();
+			    }else{
+			    	console.log("실패");
+			    }
+			}
+        }
+    });
+});
+
+//.order 변수에 담기
+var orderInputs = document.querySelectorAll('.order');
+//합계 변수 담기
+var totalPrice = document.getElementById('total-price');
+
+
+//쉼표가 포함된 숫자 포맷 함수
+function formatNumberWithCommas(number) {
+  return new Intl.NumberFormat().format(number);
+}
+
+var result = 0;
+var previousResult = 0;
+var previousItem = [];
+var calculatedResult = 0;
+
+// 동적으로 추가된 order input의 부모 요소에 이벤트 리스너 추가
+document.addEventListener('keyup', function(event) {
+	if (event.target.classList.contains('order')) {
+		console.log('발주 인풋 값:', event.target.value);
+        const inputValue = parseFloat(event.target.value); // 숫자로 변환
+
+        // 부모 tr 요소 찾기
+        const trElement = event.target.closest('tr');
+        
+		// tr 요소의 자식 요소 중에서 1번째 요소 찾기
+        const presentItem = trElement.children[0].textContent;
+        // tr 요소의 자식 요소 중에서 3번째 요소 찾기
+        const thirdElementText = trElement.children[3].textContent; // 해당 엘리먼트의 텍스트 콘텐츠 가져오기
+		const thirdElementWithoutComma = thirdElementText.replace(/,/g, ''); // 쉼표 제거
+        
+		var isDuplicate = true;
+		
+		for(let i = 0; i < previousItem.length; i++){
+			if(previousItem[i] == presentItem){
+				isDuplicate = false;
+				console.log(previousItem[i]);
+			}
+		}
+
+		// 곱셈 수행
+        result = inputValue * thirdElementWithoutComma;
+        console.log('곱셈 결과:', result);
+        
+        if(event.keyCode == 13){
+        // 엔터키를 눌렀을 때 입력되는 결과가 이전의 결과와 동일하면(중복 입력)을 막음
+        	if(previousResult != result){
+        		if(isDuplicate){
+	        		calculatedResult += result
+			        totalPrice.value = formatNumberWithCommas(calculatedResult);
+	        		
+	        		//검증을 위한 값 입력
+	        		previousResult = result;
+	        		previousItem.push(trElement.children[0].textContent);
+	        		console.log(previousItem);
+        		}else{
+        			Swal.fire({
+  	                  title: '중복된 품목이 이미 입력되었습니다.',
+  	                  icon: 'error',
+  	                  showCancelButton: false,
+  	                  confirmButtonColor: '#0ABAB5',
+  	                  cancelButtonColor: '#8D9EA5',
+  	                  confirmButtonText: '확인',
+  	                  cancelButtonText: '취소'
+  					});
+        		}
+        	}else{
+        		Swal.fire({
+	                  title: '중복된 값이 입력되었습니다.',
+	                  icon: 'error',
+	                  showCancelButton: false,
+	                  confirmButtonColor: '#0ABAB5',
+	                  cancelButtonColor: '#8D9EA5',
+	                  confirmButtonText: '확인',
+	                  cancelButtonText: '취소'
+					});
+        	}
+		}
+	}
+});
+
+//재고현황 발주리스트 강조 로직
+$('#inner-tab1').click(function(){
+	$('.waiting').attr('style', 'display: block');
+	$('.complete').attr('style', 'display: none');
+	$('#inner-tab1').attr('style', 'border-bottom: 3px solid var(--ci-01, #0ABAB5)' );
+	$('#inner-tab2').attr('style', 'border-bottom: 0px solid var(--ci-01, #0ABAB5)' );
+});
+$('#inner-tab2').click(function(){
+	$('.complete').attr('style', 'display: block');
+	$('.waiting').attr('style', 'display: none');
+	$('#inner-tab1').attr('style', 'border-bottom: 0px solid var(--ci-01, #0ABAB5)' );
+	$('#inner-tab2').attr('style', 'border-bottom: 3px solid var(--ci-01, #0ABAB5)' );
+});
+</script>
+</body>
+

@@ -1,0 +1,66 @@
+package kr.or.dduk.clinic.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import kr.or.dduk.mapper.OrderSetMapper;
+import kr.or.dduk.vo.InjuryVO;
+import kr.or.dduk.vo.MedicineVO;
+import kr.or.dduk.vo.OrderSetVO;
+import kr.or.dduk.vo.TestVO;
+import kr.or.dduk.vo.TreatmentVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+public class OrderSetServiceImpl implements OrderSetService{
+	
+	@Autowired
+	OrderSetMapper orderSetMapper;
+	
+	/**
+	 * 로그인한 의사의 사번으로 DB에서 오더세트VO 리스트를 가져와서 오더세트에 출력
+	 */
+	@Override
+	public List<OrderSetVO> getOrderSetList(String empNo){
+		return this.orderSetMapper.getOrderSetList(empNo);
+	}
+	
+	/**
+	 * 오더세트 추가 모달 에서 오더카테고리 선택에 따른 검색 풀 갱신
+	 * InjuryVO의 List 리턴
+	 */
+	@Override
+	public List<InjuryVO> getInjuryVOList(){
+		return this.orderSetMapper.getInjuryVOList();
+	}
+	
+	/**
+	 * 오더세트 추가 모달 에서 오더카테고리 선택에 따른 검색 풀 갱신
+	 * TestVO의 List 리턴
+	 */
+	@Override
+	public List<TestVO> getTestVOList(){
+		return this.orderSetMapper.getTestVOList();
+	}
+	
+	/**
+	 * 오더세트 추가 모달 에서 오더카테고리 선택에 따른 검색 풀 갱신
+	 * MedicineVO의 List 리턴
+	 */
+	@Override
+	public List<MedicineVO> getMedicineVOList(){
+		return this.orderSetMapper.getMedicineVOList();
+	}
+	
+	/**
+	 * 오더세트 추가 모달 에서 오더카테고리 선택에 따른 검색 풀 갱신
+	 * TreatmentVO의 List 리턴
+	 */
+	@Override
+	public List<TreatmentVO> getTreatmentVOList(){
+		return this.orderSetMapper.getTreatmentVOList();
+	}
+}

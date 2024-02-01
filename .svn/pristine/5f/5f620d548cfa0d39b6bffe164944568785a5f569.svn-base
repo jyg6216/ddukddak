@@ -1,0 +1,25 @@
+package kr.or.dduk.treatment.controller;
+
+import java.util.List;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import lombok.extern.slf4j.Slf4j;
+
+
+@Slf4j
+@Controller
+@RequestMapping("/treatment")
+public class TreatmentRecordController {
+
+	/**
+	 * 치료기록 페이지 이동
+	 * @return
+	 */
+	@RequestMapping(value="/treatmentRecord")
+	public String treatmentRecord() {
+		
+		return "treatment/treatmentRecord";
+	}
+}

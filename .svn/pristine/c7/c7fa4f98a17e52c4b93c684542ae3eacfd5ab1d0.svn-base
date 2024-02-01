@@ -1,0 +1,14 @@
+package kr.or.dduk.vo;
+
+import lombok.Data;
+
+@Data
+public class TreatmentOrderVO {
+	private String tmCd;		// 치료코드
+	private String clinicNo;	// 진료번호
+	private String bodyCd;		// 환부코드(공통상세코드)
+	private String trodCont;	// 치료기록
+	private String empNo;		// 치료사사번
+	
+	private TreatmentVO	treatmentVO;	 // 치료코드VO
+}

@@ -1,0 +1,16 @@
+package kr.or.dduk.vo;
+
+import java.util.Date;
+
+import lombok.Data;
+
+@Data
+public class NurScheduleVO {
+	private Date nurscDt;
+	private String empNo;
+	private String nurscType;
+	private Date nurscEndt;
+	private Date nurscUpdt;
+	private String nurscWt;
+	private String nurscNo;
+}

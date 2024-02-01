@@ -1,0 +1,687 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<link rel="stylesheet" href="/resources/css/jquery-ui.css">
+<script src="//code.jquery.com/jquery.min.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+<script src="/resources/script/jquery.mtz.monthpicker.js"></script>
+
+<style>
+.dduk-body-border {
+	height: calc(50% - 8px);
+}
+
+#container {
+    height: 300px;
+    min-width: 310px;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.loading {
+    margin-top: 10em;
+    text-align: center;
+    color: gray;
+}
+
+.highcharts-credits {
+	display: none !important;
+}
+
+.highcharts-exporting-group {
+	display: none !important;
+}
+.highcharts-contextbutton {
+	display: none !important;
+}
+
+.col-4 {
+	padding: 0px !important;
+}
+
+#reservationMonthPicker {
+	margin: -16px 8px 16px 8px;
+}
+</style>
+<div class="col-4 gap-ver-16">
+	<div class="dduk-body-border w-100">
+		<div class="dduk-title-area">
+			<h2>환자 현황</h2>
+		</div>
+		<!-- 차트 그릴 영역 -->
+		<canvas id="myChart" height="300" width="480" ></canvas>
+	</div>
+	<div class="dduk-body-border w-100">
+		<div class="dduk-title-area">
+			<h2>지역 별 환자 수 현황</h2>
+		</div>
+		<!-- 차트 그릴 영역 -->
+
+		<div id="container"></div>
+		
+	</div>
+</div>
+
+<div class="col-4 gap-ver-16">
+	<div class="dduk-body-border w-100">
+		<div class="dduk-title-area">
+			<h2>입원 환자 현황</h2>
+		</div>
+		<!-- 차트 그릴 영역 -->
+		<canvas id="myChart2" height="300" width="480" ></canvas>
+	</div>
+	<div class="dduk-body-border w-100">
+		<div class="dduk-title-area spa-betw" style="margin-bottom: 0px;">
+			<h2>예약 건수</h2>
+			<div class="d-flex gap-row-8">
+				<h3>요일별</h3>
+				<h3>시간대별</h3>
+			</div>			
+		</div>
+		<input type="text" id="reservationMonthPicker" />
+		<!-- 차트 그릴 영역 -->
+		<canvas id="myChart3" height="270" width="480" ></canvas>
+	</div>
+</div>
+
+<div class="col-4 gap-ver-16">
+	<div class="dduk-body-border w-100">
+		<div class="dduk-title-area">
+			<h2>매출 현황</h2>
+		</div>
+		<!-- 차트 그릴 영역 -->
+		<canvas id="myChart4" height="300" width="480" ></canvas>
+	</div>
+	<div class="dduk-body-border w-100">
+		<div class="dduk-title-area">
+			<h2>매출 요약</h2>
+		</div>
+		<!-- 차트 그릴 영역 -->
+		<canvas id="myChart5" height="300" width="480" ></canvas>
+	</div>
+</div>
+
+<script src="https://code.highcharts.com/modules/marker-clusters.js"></script>
+<script src="https://code.highcharts.com/modules/coloraxis.js"></script>
+<script src="https://code.highcharts.com/maps/modules/accessibility.js"></script>
+<script src="https://code.highcharts.com/maps/highmaps.js"></script>
+<script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<script>
+$(document).ready(function() {
+    // 빈 차트를 생성한다. 
+    var chart = new Chart(document.getElementById("myChart"), {
+        type: 'bar',
+        data: {
+            labels: ['10대 이하', '20대', '30대', '40대', '50대', '60대 이상'],
+            datasets: [
+                        {label: [], data: [],},
+                        {label: [], data: [],},
+                        {label: [], data: [],},
+                        {label: [], data: [],},
+                        {label: [], data: [],},
+                        {label: [], data: [],}
+            ],
+            borderWidth: 1
+        },
+    });
+
+//  ajax를 이용하여 json 타입의 데이터를 수신
+
+    $.ajax({
+    	url: '/common/getPatientList',
+		type: 'post',
+		dataType: 'json',
+		contentType: "application/json; UTF-8",
+		beforeSend: function(xhr){
+			xhr.setRequestHeader("${_csrf.headerName}","${_csrf.token}");
+		},
+		success: function(rst){
+			console.log(rst);
+			let m10s = 0;
+			let m20s = 0;
+			let m30s = 0;
+			let m40s = 0;
+			let m50s = 0;
+			let m60s = 0;
+
+			let f10s = 0;
+			let f20s = 0;
+			let f30s = 0;
+			let f40s = 0;
+			let f50s = 0;
+			let f60s = 0;
+
+			$.each(rst, function(idx){
+			    let birth = formatResidentNumber(rst[idx].paReg);
+			    let age = getAge(birth);
+
+			    if (rst[idx].paSex == '남') {
+			        if (age < 20) {
+			            m10s++;
+			        } else if (20 <= age && age < 30) {
+			            m20s++;
+			        } else if (30 <= age && age < 40) {
+			            m30s++;
+			        } else if (40 <= age && age < 50) {
+			            m40s++;
+			        } else if (50 <= age && age < 60) {
+			            m50s++;
+			        } else if (60 <= age) {
+			            m60s++;
+			        }
+			    } else if (rst[idx].paSex == '여') {
+			        if (age < 20) {
+			            f10s++;
+			        } else if (20 <= age && age < 30) {
+			            f20s++;
+			        } else if (30 <= age && age < 40) {
+			            f30s++;
+			        } else if (40 <= age && age < 50) {
+			            f40s++;
+			        } else if (50 <= age && age < 60) {
+			            f50s++;
+			        } else if (60 <= age) {
+			            f60s++;
+			        }
+			    }
+			});
+			
+			chart.destroy(); // 기존에 생성한 차트 오브젝트를 없앤다. 
+            
+            // 수신한 json 타입 데이터를 이용하여 차트를 새로 그린다. 
+            chart = new Chart(document.getElementById("myChart"), {
+                type: 'bar',
+                data: {
+                    labels: ['10대 이하', '20대', '30대', '40대', '50대', '60대 이상'],
+                    datasets: [
+                        {	
+                        	label:'남',
+                            data: [m10s, m20s, m30s, m40s, m50s, m60s],
+                            borderColor: 'rgba(255, 0, 0, 0)',
+                            backgroundColor:['#5CA0FF']
+                        },
+                        {	
+                        	label:'여',
+                            data: [f10s, f20s, f30s, f40s, f50s, f60s],
+                            borderColor: 'rgba(255, 0, 0, 0)',
+                            backgroundColor:['#FF94D2']
+                        }
+                    ],
+                    borderWidth: 1
+                },options:{ 
+                	responsive: false,
+                    scales: {
+	                    	 x: {
+	                    	      beginAtZero: true,
+	                    	      stacked:true,
+	                    	        scaleLineColor: 'red',
+	                    	          grid: {
+	                    	            color: 'transparent',
+	                    	          },
+	                    	       },
+	                    	     y: {
+	                    	       beginAtZero: true,
+	                    	       stacked:true,
+	                    	         grid: {
+	                    	           color: 'transparent',
+	                    	         },
+	                    	    	}
+                      		},
+                    plugins: {
+                    	 legend: {
+                   	        position: 'right',
+                   	        align: 'start'
+                   	  	}
+                    }
+                  }
+            });
+			
+			//지역별 환자 수 count
+			let ich = 0;
+			let gyeonggi = 0;
+			let jeollaN = 0;
+			let gyeongsangS = 0;
+			let jeollaS = 0;
+			let busan = 0;			
+			let gyeongsangN = 0;
+			let sejong = 0;
+			let deajeon = 0;
+			let ulsan = 0;
+			let gangwon = 0;
+			let chungcheongS = 0;
+			let jeju = 0;
+			let chungcheongN = 0;
+			let seoul = 0;
+			let Deagu = 0;
+			let Gwangju = 0;
+			$.each(rst, function(idx, item){
+				 if (item.paAdd1.includes('인천')) {
+				        ich++;
+				    }
+				    if (item.paAdd1.includes('경기')) {
+				        gyeonggi++;
+				    }
+				    if (item.paAdd1.includes('전라남도')) {
+				        jeollaN++;
+				    }
+				    if (item.paAdd1.includes('경상남도')) {
+				        gyeongsangS++;
+				    }
+				    if (item.paAdd1.includes('전라북도')) {
+				        jeollaS++;
+				    }
+				    if (item.paAdd1.includes('부산')) {
+				        busan++;
+				    }
+				    if (item.paAdd1.includes('경상북도')) {
+				        gyeongsangN++;
+				    }
+				    if (item.paAdd1.includes('세종')) {
+				        sejong++;
+				    }
+				    if (item.paAdd1.includes('대전')) {
+				        deajeon++;
+				    }
+				    if (item.paAdd1.includes('울산')) {
+				        ulsan++;
+				    }
+				    if (item.paAdd1.includes('강원도')) {
+				        gangwon++;
+				    }
+				    if (item.paAdd1.includes('충청남도')) {
+				        chungcheongS++;
+				    }
+				    if (item.paAdd1.includes('제주')) {
+				        jeju++;
+				    }
+				    if (item.paAdd1.includes('충청북도')) {
+				        chungcheongN++;
+				    }
+				    if (item.paAdd1.includes('서울')) {
+				        seoul++;
+				    }
+				    if (item.paAdd1.includes('대구')) {
+				    	Deagu++;
+				    }
+				    if (item.paAdd1.includes('광주')) {
+				    	Gwangju++;
+				    }
+				
+			});
+			
+            const data = [
+		        ['kr-4194', ich], ['kr-kg', gyeonggi], ['kr-cb', jeollaN], ['kr-kn', gyeongsangS],
+		        ['kr-2685', jeollaS], ['kr-pu', busan], ['kr-2688', gyeongsangN], ['kr-sj', sejong],
+		        ['kr-tj', deajeon], ['kr-ul', ulsan], ['kr-in', ich], ['kr-kw', gangwon],
+		        ['kr-gn', chungcheongS], ['kr-cj', jeju], ['kr-gb', chungcheongN], ['kr-so', seoul],
+		        ['kr-tg', Deagu], ['kr-kj', Gwangju]
+		    ];
+			
+            createMapChart(data);
+			
+		},
+		error: function(xhr, status, error){
+			console.log('Error:', xhr, status, error);
+		}
+    });
+
+});
+
+async function createMapChart(data) {
+	 const topology = await fetch(
+		        'https://code.highcharts.com/mapdata/countries/kr/kr-all.topo.json'
+		    ).then(response => response.json());
+
+		    // Prepare demo data. The data is joined to map using value of 'hc-key'
+		    // property by default. See API docs for 'joinBy' for more info on linking
+		    // data and map.
+		    
+// 		    const data = [
+// 		        ['kr-4194', 10], ['kr-kg', 13], ['kr-cb', 12], ['kr-kn', 13],
+// 		        ['kr-2685', 14], ['kr-pu', 15], ['kr-2688', 16], ['kr-sj', 17],
+// 		        ['kr-tj', 18], ['kr-ul', 19], ['kr-in', 20], ['kr-kw', 21],
+// 		        ['kr-gn', 22], ['kr-cj', 23], ['kr-gb', 24], ['kr-so', 25],
+// 		        ['kr-tg', 26], ['kr-kj', 27]
+// 		    ];
+
+		    // Create the chart
+		    Highcharts.mapChart('container', {
+		        chart: {
+		            map: topology,
+		            
+		            style: {//차트 전체 스타일 지정
+						color: '#0ABAB5',
+					}
+		        },
+
+		        title: {
+		            text: '',
+		        },
+
+		        subtitle: {
+		            text: '',
+		        },
+
+		        mapNavigation: {
+		            enabled: true,
+		            buttonOptions: {
+		                verticalAlign: 'bottom'
+		            }
+		        },
+
+		        colorAxis: {
+		            min: 0,
+		            maxColor: '#0ABAB5',
+		            minColor: '#ffffff'
+		        },
+		        
+		        plotOptions: {
+		            mappoint: {
+		                cluster: {
+		                    enabled: true,
+		                    allowOverlap: false,
+		                    animation: {
+		                        duration: 450
+		                    },
+		                    layoutAlgorithm: {
+		                        type: 'grid',
+		                        gridSize: 70
+		                    },
+		                    zones: [{
+		                        from: 1,
+		                        to: 4,
+		                        marker: {
+		                            radius: 13
+		                        }
+		                    }, {
+		                        from: 5,
+		                        to: 9,
+		                        marker: {
+		                            radius: 15
+		                        }
+		                    }, {
+		                        from: 10,
+		                        to: 15,
+		                        marker: {
+		                            radius: 17
+		                        }
+		                    }, {
+		                        from: 16,
+		                        to: 20,
+		                        marker: {
+		                            radius: 19
+		                        }
+		                    }, {
+		                        from: 21,
+		                        to: 100,
+		                        marker: {
+		                            radius: 21
+		                        }
+		                    }]
+		                }
+		            }
+		        },
+
+		        series: [{
+		            data: data,
+		            name: 'Random data',
+		            states: {
+		                hover: {
+		                    color: '#DBF2F4',
+		                    borderColor:'#ffffff'
+		                }
+		            },
+		            accessibility: {
+		                exposeAsGroupOnly: true
+		            },
+		            borderColor: 'transparent',
+		            nullColor: '#0ABAB5',
+		            showInLegend: false
+		        }, {
+		            type: 'mappoint',
+		            enableMouseTracking: true,
+		            accessibility: {
+		                point: {
+		                    descriptionFormat: '{#if isCluster}' +
+		                            'Grouping of {clusterPointsAmount} points.' +
+		                            '{else}' +
+		                            '{name}, country code: {country}.' +
+		                            '{/if}'
+		                }
+		            },
+		            colorKey: 'clusterPointsAmount',
+		            name: 'Cities',
+		            data: data,
+		            color: Highcharts.getOptions().colors[5],
+		            marker: {
+		                lineWidth: 1,
+		                lineColor: '#fff',
+		                symbol: 'mapmarker',
+		                radius: 8
+		            },
+		            dataLabels: {
+		                enabled: true,
+		                format: '{point.name}'
+		            }
+		        }]
+		    });
+}
+
+//예약가져오기//////////////////////////////////////////////////////////////////////////////////////
+    var chart3 = new Chart(document.getElementById("myChart3"), {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [
+                        {label: [], data: [],},
+                        {label: [], data: [],},
+                        {label: [], data: [],},
+                        {label: [], data: [],},
+                        {label: [], data: [],},
+                        {label: [], data: [],}
+            ],
+            borderWidth: 1
+        },
+    });
+	
+	// monthpicker 설정
+    $("#reservationMonthPicker").monthpicker({
+		pattern: 'yyyy-mm',
+		monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+		selectedYear: "2024",
+		startYear : "1990",
+		finalYear : "2100",
+		openOnFocus : true
+	});
+    
+ 	// 현재 날짜 객체 생성
+    var currentDate = new Date();
+
+    // 년, 월 정보 가져오기
+    var year = currentDate.getFullYear();
+    var month = currentDate.getMonth() + 1; // 월은 0부터 시작하므로 1을 더해줍니다.
+
+    // 월이 한 자릿수일 경우 앞에 0을 추가
+    var formattedMonth = (month < 10) ? '0' + month : month;
+
+    // 년월까지만 가져와서 문자열로 생성
+    var yearMonthString = year + '-' + formattedMonth;
+
+    
+    $("#reservationMonthPicker").val(yearMonthString);
+    
+    $("#reservationMonthPicker").on('click', function(){
+		$("#reservationMonthPicker").monthpicker('show');
+    })
+	
+    getReservationListByMonth(year, formattedMonth);
+    
+    $(document).on('change', '#reservationMonthPicker', function(){
+		// 선택된 날짜 가져오기
+		let date = $('#reservationMonthPicker').val();
+		
+		// 문자열을 '-' 기준으로 분리
+		let parts = date.split('-');
+
+		// 분리된 값에서 년도와 월 추출
+		let year = parseInt(parts[0]);
+		let month = parseInt(parts[1]);
+		console.log('year, month', year, month);
+		
+		// 날짜를 기준으로 차트 그리기
+		getReservationListByMonth(year, month);
+	});
+    
+	function getReservationListByMonth(year, month) {
+		let data = {
+			"year":year,
+			"month":month
+		}
+		
+		chart3.destroy(); // 기존에 생성한 차트 오브젝트를 없앤다. 
+		
+		$.ajax({
+			url: '/reserve/getReservationListByMonth',
+			type: 'post',
+			data:JSON.stringify(data),
+			dataType: 'json',
+			contentType: "application/json; UTF-8",
+			beforeSend: function(xhr){
+				xhr.setRequestHeader("${_csrf.headerName}","${_csrf.token}");
+			},
+			success: function(rst){
+				console.log('통계용 예약', rst);
+				let mon = 0;
+				let tue = 0;
+				let wend = 0;
+				let thur = 0;
+				let fri = 0;
+				let sat = 0;
+				let sun = 0;
+				$.each(rst, function(idx){
+					var dateObject = new Date(rst[idx].rsvtDt);
+					
+					// 요일을 가져오기 (0은 일요일, 1은 월요일, ..., 6은 토요일)
+					var dayOfWeek = dateObject.getDay();
+
+					// 요일을 텍스트로 변환
+					var daysOfWeekText = ["일", "월", "화", "수", "목", "금", "토"];
+					var dayOfWeekText = daysOfWeekText[dayOfWeek];
+					
+					if(dayOfWeekText == '월') {
+						mon++;
+					} else if (dayOfWeekText == '화') {
+						tue++; 
+					} else if (dayOfWeekText == '수') {
+						wend++;
+					} else if (dayOfWeekText == '목') {
+						thur++;
+					} else if (dayOfWeekText == '금') {
+						fri++;
+					} else if (dayOfWeekText == '토') {
+						sat++;
+					} else if (dayOfWeekText == '일') {
+						sun++;
+					}
+					console.log("요일:", dayOfWeekText);
+				});
+				
+	            
+	            // 수신한 json 타입 데이터를 이용하여 차트를 새로 그린다. 
+	            chart3 = new Chart(document.getElementById("myChart3"), {
+	                type: 'bar',
+	                data: {
+	                    labels: ['월', '화', '수', '목', '금', '토', '일'],
+	                    datasets: [
+	                        {	
+	                        	label:'',
+	                            data: [mon,tue,wend,thur,fri,sat,sun],
+	                            borderColor: 'rgba(255, 0, 0, 0)',
+	                            backgroundColor:['#5CA0FF']
+	                        }
+	                    ],
+	                    borderWidth: 1
+	                },options:{ 
+	                	responsive: false,
+	                    scales: {
+		                    	 x: {
+		                    	      beginAtZero: true,
+		                    	      stacked:true,
+		                    	        scaleLineColor: 'red',
+		                    	          grid: {
+		                    	            color: 'transparent',
+		                    	          },
+		                    	       },
+		                    	     y: {
+		                    	       beginAtZero: true,
+		                    	       stacked:true,
+		                    	         grid: {
+		                    	           color: 'transparent',
+		                    	         },
+		                    	    	}
+	                      		},
+	                    plugins: {
+	                    	 legend: {
+	                    		 display: false
+	                   	  	}
+	                    }
+	                  }
+	            });
+				
+				
+			}, 
+			error: function(xhr, status, error){
+				console.log('Error:', xhr, status, error);
+			}
+	});
+	
+}
+//예약가져오기 끝//////////////////////////////////////////////////////////////////////////////////////
+
+// (async () => {
+
+// })();
+
+
+//주민번호로 만나이 계산
+function getAge(paBirthDay) {
+	
+	// 현재날짜, 생일로 날짜계산
+    const currentDate = new Date();
+    const birthdateDate = new Date(paBirthDay);
+    let age = currentDate.getFullYear() - birthdateDate.getFullYear();
+
+    // 현재와 생일의 월, 날짜 얻어주기
+	const currentMonth = currentDate.getMonth();
+	const birthdateMonth = birthdateDate.getMonth();
+	const currentDay = currentDate.getDate();
+	const birthdateDay = birthdateDate.getDate();
+
+	// 현재 날짜가 생년월일보다 앞 날짜면 아직 생일이 오지 않은 상태임(한살빼기)
+	if (currentMonth <= birthdateMonth && currentDay < birthdateDay) {
+   		age--;
+	}
+    return age;
+}
+
+//주민번호를 생년월일로 변환
+function formatResidentNumber(residentNumber) {
+	
+	// 00~39년생은 20을 붙이고 그 외엔 19를 붙인다
+    let year = "";
+    if(Number(residentNumber.substr(0,1)) <= 3){
+    	year += "20";
+    } else {
+    	year += "19";
+    }
+    year += residentNumber.substr(0,2);
+    
+    let month = residentNumber.substr(2,2);
+    let day = residentNumber.substr(4,2);
+    
+    let birthDay = year + "-" + month + "-" + day;
+    
+    return birthDay;
+}
+</script>

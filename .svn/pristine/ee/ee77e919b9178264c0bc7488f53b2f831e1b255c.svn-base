@@ -1,0 +1,23 @@
+package kr.or.dduk.comcode.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import kr.or.dduk.mapper.ComCodeMapper;
+import kr.or.dduk.vo.ComDetailCodeInfoVO;
+
+@Service
+public class ComCodeServiceImpl implements ComCodeService {
+
+	@Autowired
+	ComCodeMapper comCodeMapper;
+	
+	// 직책 조회용
+	@Override
+	public List<ComDetailCodeInfoVO> getComDetailCodeInfo(String empDeptCd) {
+		return this.comCodeMapper.getComDetailCodeInfo(empDeptCd);
+	}
+
+}

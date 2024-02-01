@@ -1,0 +1,55 @@
+package kr.or.dduk.calendar.service.impl;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import kr.or.dduk.calendar.service.CalendarService;
+import kr.or.dduk.mapper.CalendarMapper;
+import kr.or.dduk.mapper.EmployeeMapper;
+import kr.or.dduk.vo.DocScheduleVO;
+import kr.or.dduk.vo.EmployeeVO;
+
+@Service
+public class CalendarServiceImpl implements CalendarService {
+	
+	@Autowired
+	CalendarMapper calendarMapper;
+	
+	@Autowired
+	EmployeeMapper employeeMapper;
+
+	@Override
+	public int createSch(DocScheduleVO docScheduleVO) {
+		return this.calendarMapper.createSch(docScheduleVO);
+	}
+
+	@Override
+	public int deleteSch(String dsNo) {
+		return this.calendarMapper.deleteSch(dsNo);
+	}
+
+	@Override
+	public List<DocScheduleVO> schList(Map<String, Object> map) {
+		return this.calendarMapper.schList(map);
+	}
+
+	@Override
+	public DocScheduleVO selectSch(String dsNo) {
+		return this.calendarMapper.selectSch(dsNo);
+	}
+
+	@Override
+	public int updateSch(DocScheduleVO docScheduleVO) {
+		return this.calendarMapper.updateSch(docScheduleVO);
+	}
+
+	@Override
+	public List<DocScheduleVO> selectByDate(Map<String, Object> map) {
+		return this.calendarMapper.selectByDate(map);
+	}
+
+
+}

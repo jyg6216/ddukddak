@@ -1,0 +1,427 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+
+<style>
+/* 모달 스타일 */
+.modal {
+	display: none; /* 초기에는 모달을 감춤 */
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5); /* 배경에 어둡게 투명한 검정색 레이어 생성 */
+	justify-content: center;
+	align-items: center;
+}
+
+.modal-content {
+	background-color: #fefefe;
+	transform: translate(110%, 30%);
+	padding: 20px;
+	border: 1px solid #888;
+	width: 80%;
+	max-width: 600px;
+	text-align: center;
+}
+
+/* 닫기 버튼 스타일 */
+.close {
+	color: #aaa;
+	float: right;
+	width: 10%;
+	font-size: 28px;
+	font-weight: bold;
+}
+
+.close:hover, .close:focus {
+	color: black;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+/* 저장 버튼 스타일 */
+#realSaveEvent {
+	margin-top : 30px;
+	display: flex;
+	width: 100%;
+	padding: 8px 16px;
+	justify-content: center;
+	align-items: center;
+	gap: 4px;
+	border-radius: 12px;
+	background: var(--black-02, #64767C);
+}
+
+#realSaveEvent:hover {
+	background: var(--black-01, #323537);
+}
+
+/* 풀캘린더 스타일 */
+.cal {
+	width: 50%;
+	min-height: 500px;
+	margin: 20px 50px;
+}
+
+#calendar2 {
+	width: 500px;
+	margin-left: 20px;
+}
+
+.date-group {
+	display: inline-block;
+	margin-right : 30px;
+}
+
+select[readonly] {
+  background-color: #ddd;
+  pointer-events: none;
+}
+출처: https://askforyou.tistory.com/67 [foryou 코딩:티스토리]
+</style>
+
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<!-- sweetalert -->
+<script src="/resources/fullcalendar-6.1.10/sweetalert2.min.js"></script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+<!-- 풀캘린더 -->
+<div id="calendar1" class="cal"></div>
+<div id="calendar2" class="cal"></div>
+
+<!-- 일정 추가하는 모달 창 -->
+<div id="myModal" class="modal">
+	<div class="modal-content">
+		<span class="close" id="closeModal" >&times;</span>
+		<label for="eventStart">시작 일시</label>
+			<input type="date" id="eventStart" class="form-control" >
+			<select class="form-control" name="time-set" id="start" >
+				<option value="09:00">09:00</option>
+				<option value="09:30">09:30</option>
+				<option value="10:00">10:00</option>
+				<option value="10:30">10:30</option>
+				<option value="11:00">11:00</option>
+				<option value="11:30">11:30</option>
+				<option value="12:00">12:00</option>
+				<option value="12:30">12:30</option>
+				<option value="13:00">13:00</option>
+				<option value="13:30">13:30</option>
+				<option value="14:00">14:00</option>
+				<option value="14:30">14:30</option>
+				<option value="15:00">15:00</option>
+				<option value="15:30">15:30</option>
+				<option value="16:00">16:00</option>
+				<option value="16:30">16:30</option>
+				<option value="17:00">17:00</option>
+				<option value="17:30">17:30</option>
+				<option value="18:00">18:00</option>
+				<option value="18:30">18:30</option>
+			</select>
+		<label for="eventEnd">종료 일시</label>
+			<input type="date" id="eventEnd" class="form-control"onchange="dayCheck()">
+		   <div class="form-group">
+			<select class="form-control" name="time-set" id="end" onchange="timeCheck()">
+				<option value="09:30">09:30</option>
+				<option value="10:00">10:00</option>
+				<option value="10:30">10:30</option>
+				<option value="11:00">11:00</option>
+				<option value="11:30">11:30</option>
+				<option value="12:00">12:00</option>
+				<option value="12:30">12:30</option>
+				<option value="13:00">13:00</option>
+				<option value="13:30">13:30</option>
+				<option value="14:00">14:00</option>
+				<option value="14:30">14:30</option>
+				<option value="15:00">15:00</option>
+				<option value="15:30">15:30</option>
+				<option value="16:00">16:00</option>
+				<option value="16:30">16:30</option>
+				<option value="17:00">17:00</option>
+				<option value="17:30">17:30</option>
+				<option value="18:00">18:00</option>
+				<option value="18:30">18:30</option>
+				<option value="19:00" >19:00</option>
+			</select>
+		  </div>
+		  <div class="form-group">
+			  <label for="allDay">종일여부</label><br>
+			  <div class="form-check date-group">
+				<label class="form-check-label ">
+					<input type="radio" id="wholeTime" class="form-check-input date-group" value="true" name="allDay">예
+				</label>
+			  </div>
+			  <div class="form-check date-group">
+			  	<label class="form-check-label ">
+					<input type="radio" id="partTime" checked="checked" class="form-check-input date-group" value="false" name="allDay">아니오
+				</label>
+			  </div>
+			</div>
+			<div class="form-group">
+			<label for="eventContent">일정 내용</label>
+			<input type="textbox" id="eventContent" class="form-control" placeholder="내용을 입력해주세요">
+		</div>
+			<label for="color">분류</label>
+            <select id="color" class="form-control">
+              <option value="blue">진료</option>
+              <option value="red">수술</option>
+              <option value="indigo">검사</option>
+              <option value="yellow">연구</option>
+              <option value="gray">휴진</option>
+            </select>
+		<button id="realSaveEvent" onclick="modalSave()">저장</button>
+     </div>
+		
+		
+</div>
+
+
+<script>
+// 날짜 선택 제한
+// 현재 날짜 불러와서 문자 형태 맞추기
+const date = new Date();
+const year = date.getFullYear();
+const month = ('0' + (date.getMonth() + 1)).slice(-2);
+const day = ('0' + (date.getDate())).slice(-2);
+const today = year+"-"+month+"-"+day;
+// 현재 날짜 이전으로는 선택 불가
+$("#eventStart").attr("min", today);
+$("#eventEnd").attr("min", today);
+
+// month 달력 특정
+let calendarEl = $("#calendar1")[0];
+let calendar1;
+
+	document.addEventListener('DOMContentLoaded', function() {
+
+		let start = $("#eventStart").val();
+		let end = $("#eventEnd").val();
+		let content = $("#eventContent").val();
+		
+		calendar1 = new FullCalendar.Calendar(calendarEl, {
+			// 한국어 설정
+			locale : 'ko',
+			// 화면에 맞게 높이 재설정
+			expandRows : true,
+			// 초기 로드 될때 보이는 캘린더 화면(기본 설정: 달)
+			initialView : 'dayGridMonth',
+			// 날짜를 클릭했을 시 이벤트
+			dateClick : function(info) {
+				console.log(info.dateStr); // 2023-12-07
+			},
+			// 드래그해서 수정 가능
+			editable: true,
+			// 날짜를 선택하면 Day 캘린더나 Week 캘린더로 링크
+			navLinks : false,
+			// +more 표시 전 최대 이벤트 갯수, true는 셀 높이에 의해 결정
+			dayMaxEvents: true,
+			// 버튼 만들기
+			customButtons : {
+				calButton : {
+					text : "캘린더",
+					click : function() {
+						calendar1.refetchEvents();
+					}
+				},
+				saveEvent : {
+					text : "일정 추가 +",
+					click : function() {
+						// 모달 열기
+						$("#myModal").css("display", "block");
+						// 'X'버튼으로 모달 닫기
+						document.getElementById('closeModal').onclick = function() {
+							document.getElementById('myModal').style.display = 'none';
+						}
+						// 모달 영역 외 클릭 시 모달 닫기
+						window.onclick = function(event) {
+							var modal = $("#myModal");
+							if (event.target == modal[0]) {
+								modal.css("display", "none");
+							}
+						}
+						
+					}
+				}
+			},
+			// 해더에 표시할 툴바
+			headerToolbar : {
+				left : 'calButton prev,next',
+				center : 'title',
+				right : 'saveEvent'
+			},
+
+			// 캘린더에서 드래그로 이벤트를 생성
+			select : function(arg) {
+				let title = prompt('Event Title:');
+				if (title) {
+					calendar1.addEvent({
+						title : title,
+						start : arg.start,
+						end : arg.end,
+						allDay : arg.allDay
+					})
+				}
+				calendar1.unselect();
+			}
+		// 이벤트
+		});
+		calendar1.render();
+	});
+
+	// today 달력 특정
+	let calendarE2 = $("#calendar2")[0];
+	
+	const calendar2 = new FullCalendar.Calendar(calendarE2, {
+		// 한국어 설정
+		locale : 'ko',
+		// 초기 로드 될때 보이는 캘린더 화면(기본 설정: 달)
+		initialView : 'timeGridDay',
+		// Day 캘린더에서 시작 시간
+		slotMinTime : '09:00',
+		// Day 캘린더에서 종료 시간
+		slotMaxTime : '20:00',
+		// 현재 시간 마크
+		nowIndicator : true,
+		// 해더에 표시할 툴바
+		headerToolbar : {
+			left : 'prev,next',
+			center : 'title',
+			right : 'today'
+		},
+		// 캘린더에서 드래그로 이벤트를 생성
+		select : function(arg) {
+			let title = prompt('Event Title:');
+			if (title) {
+				calendar2.addEvent({
+					title : title,
+					start : arg.start,
+					end : arg.end,
+					allDay : arg.allDay
+				})
+			}
+			calendar2.unselect();
+		}
+	});
+	calendar2.render();
+
+	// 모달창 입력값 확인
+	function modalSave(){
+		let start = $("#eventStart").val();
+		let startTime = $("#start").val();
+		var endTime = $("#end").val();
+		let end = $("#eventEnd").val();
+		let content = $("#eventContent").val();
+		let color = $("#color").val();
+		// 종일 여부
+		let isAllDay = $('input[name="allDay"]:checked').val(); 
+		
+		let eventData = {
+		    start: start + 'T' + startTime,
+		    end: end + 'T' + endTime,
+		    title: content,
+		    color: color,
+		 	// 종일 여부에 따라 true 또는 false 설정
+		    allDay: (isAllDay === 'true')
+		};
+		
+		// 빈 값 입력 시 오류
+		if (eventData.title == "" || eventData.start == "" || eventData.end == "") {
+			Swal.fire({
+			   	title: '입력이 부족합니다. 모든 항목을 입력해주세요.',
+			   	text: '문제가 계속된다면 관리자에게 문의하세요',
+			   	icon: 'error',
+			   	confirmButtonColor: '#0ABAB5',
+			   	confirmButtonText: '확인',
+			})
+			return;
+			
+			} else {
+			   // month 달력에 이벤트 추가
+			   calendar1.addEvent(eventData);
+			   calendar1.render();
+			   
+			   console.log(eventData);
+			   
+			   //today 달력에 이벤트 추가
+			   var endTime = $('#end').val();
+			   
+			   calendar2.addEvent(eventData);
+			   calendar2.render();
+			   
+			   $("#eventStart").val("");
+			   $("#eventEnd").val("");
+			   $("#eventContent").val("");
+			   $("#color").val("");
+			   $("#myModal").css("display", "none");
+			   
+			   console.log(endTime);
+			   
+			  
+		}
+		
+	}
+	
+	// 시작일 전으로 종료일 체크 방지
+	function dayCheck() {
+		let start = $("#eventStart").val();
+		let end = $("#eventEnd").val();
+		
+		if (start > end) {
+		   //끝나는 날짜가 시작하는 날짜보다 값이 크면 안됨
+		   Swal.fire({
+		   	title: '시작보다 이전 날짜로 설정할 수 없습니다.',
+		   	text: '문제가 계속된다면 관리자에게 문의하세요',
+		   	icon: 'error',
+		   	confirmButtonColor: '#0ABAB5',
+		   	confirmButtonText: '확인',
+			})
+		// 시작일로 변경
+		$('#eventEnd').val(start);
+		return;
+		}
+	}
+	
+	// 시작 시간 전으로 종료 시간 체크 방지
+	function timeCheck() {
+		let start = $("#start").val();
+		let end = $("#end").val();
+		// 종료가 시작보다 빠른 시간이면
+		if(end <= start) {
+			Swal.fire({
+			   	title: '시작보다 이전 시간으로 설정할 수 없습니다.',
+			   	text: '문제가 계속된다면 관리자에게 문의하세요',
+			   	icon: 'error',
+			   	confirmButtonColor: '#0ABAB5',
+			   	confirmButtonText: '확인',
+			})
+			// 선택 시간따라 30분 뒤 값 설정	
+			if(start.substring(3, 5) == '00') //19:00
+				end = start.substring(0, 2) + ':30';
+			else
+				end = (parseInt(start.substring(0, 2))+1) + ':00';
+			// 선택지에 30분 뒤 값 적용
+			$('#end').val(end);
+			return;
+		}
+	}
+	
+	// 종일 여부 체크하면 시간 선택 막기
+	$('input[name="allDay"]').on("change", function(){
+		let start = '09:00';
+		let end = '19:00';
+		// '예' 체크됐는지 확인
+		let isAllDay = $('input[name="allDay"]:checked').val();
+		// '예' 체크됐으면 시간 선택 막기
+		if(isAllDay){
+			$("select[name='time-set']").prop('disabled',true);
+			$("#start").val(start);
+			$("#end").val(end);
+		}
+	})
+	
+	// AJAX 요청 보낼 때 종일 값 보내기
+	//$("select[name=태그명]").attr("disabled", false);
+	
+	
+</script>

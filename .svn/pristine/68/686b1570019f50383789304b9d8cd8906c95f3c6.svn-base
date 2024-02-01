@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.dduk.mapper.MedicineManagementMapper">
+	<insert id="purchaseMedicines" parameterType="purchaseMedicineVO">
+		<selectKey resultType="String" keyProperty="prmeNo" order="BEFORE">
+<!-- 		SELECT 'PRME'||TRIM(TO_CHAR((NVL(MAX(PRME_NO),0))+1,'0000')) -->
+<!-- 		FROM PURCHASE_MEDICINE -->
+			SELECT 'PRME'||TRIM(TO_CHAR(SUBSTR(NVL(MAX(PRME_NO),0),5)+1,'0000'))
+			FROM PURCHASE_MEDICINE
+		</selectKey>
+        <!-- PMST01 = 미결재 -->
+		INSERT INTO PURCHASE_MEDICINE(PRME_NO, PRME_DT, PRME_APPL, PRME_ATRL_FST, PRME_ATRL_SEC, PRME_ATRL_STAT)
+		VALUES(#{prmeNo}, SYSDATE, #{prmeAppl}, null, null, 'PMST01')
+	</insert>
+	
+	<insert id="addMedicineDetail">
+		<selectKey resultType="String" keyProperty="prmeNo" order="BEFORE">
+			SELECT MAX(PRME_NO)
+			FROM PURCHASE_MEDICINE
+		</selectKey>
+		INSERT INTO PURCHASE_MEDICINE_DETAIL(PRME_NO, MEDI_CD, PRME_QT, PRME_STDT)
+		VALUES(#{prmeNo}, #{mediCd}, #{prmeQt}, null)
+	</insert>
+	
+	<select id="getAllPurchase" resultType="purchaseMedicineVO">
+		SELECT 
+		    P.PRME_NO,
+		    P.PRME_DT,
+		    P.PRME_APPL,
+		    P.PRME_ATRL_FST,
+		    P.PRME_ATRL_SEC,
+		    P.PRME_ATRL_STAT,
+		    E.EMP_NAME
+		FROM PURCHASE_MEDICINE P
+		JOIN EMPLOYEE E ON P.PRME_APPL = E.EMP_NO
+	</select>
+</mapper>

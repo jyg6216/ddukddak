@@ -1,0 +1,45 @@
+package kr.or.dduk.ams.service.impl;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import kr.or.dduk.ams.service.AdmissionService;
+import kr.or.dduk.mapper.AdmissionMapper;
+import kr.or.dduk.vo.ClinicChartVO;
+import kr.or.dduk.vo.PatientVO;
+
+@Service
+public class AdmissionServiceImpl implements AdmissionService{
+
+	@Autowired
+	private AdmissionMapper admissionMapper;
+	
+	//입원대기 환자 조회
+	@Override
+	public List<PatientVO> selectAdmissionList() {
+		return admissionMapper.selectAdmissionList();
+	}
+
+	//퇴원대기 환자 조회
+	@Override
+	public List<PatientVO> selectDischargeList() {
+		return admissionMapper.selectDischargeList();
+	}
+
+	@Override
+	public List<PatientVO> getPatientDetail(String paNo) {
+		return this.admissionMapper.getPatientDetail(paNo);
+	}
+
+	@Override
+	public List<ClinicChartVO> getClinicOpinion(String clinicNo) {
+		return admissionMapper.getClinicOpinion(clinicNo);
+	}
+
+	
+
+}

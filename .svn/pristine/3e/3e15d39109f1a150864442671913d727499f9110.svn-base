@@ -1,0 +1,13 @@
+package kr.or.dduk.mapper;
+
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
+import kr.or.dduk.vo.NurScheduleVO;
+
+public interface WorkforceManagementMapper {
+
+	int createNurSchedule(List<NurScheduleVO> nurSchduleList);
+
+}

@@ -1,0 +1,23 @@
+package kr.or.dduk.clinic.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import kr.or.dduk.mapper.OrderSetMapper;
+import kr.or.dduk.vo.OrderSetVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+public class OrderSetServiceImpl implements OrderSetService{
+	
+	@Autowired
+	OrderSetMapper orderSetMapper;
+	
+	@Override
+	public List<OrderSetVO> getOrderSetList(String empNo){
+		return this.orderSetMapper.getOrderSetList(empNo);
+	}
+}

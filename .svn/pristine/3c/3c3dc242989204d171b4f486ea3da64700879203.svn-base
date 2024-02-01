@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.dduk.mapper.CommonMapper">
+	
+	<select id="list" resultType="patientVO">
+		SELECT * FROM PATIENT
+	</select>
+	
+	<insert id="createPatientPost" parameterType="patientVO">
+		<selectKey resultType="String" order="BEFORE" keyProperty="paNo">
+			SELECT 'PA' || TRIM(TO_CHAR(SUBSTR(MAX(PA_NO),2)+1,'0000')) 
+			AS PA_NO FROM PATIENT
+		</selectKey>
+		INSERT INTO PATIENT(PA_NO, PA_REG, PA_NAME, PA_SEX, PA_PH, PA_ADD1, PA_ADD2, 
+		PZ_ZIP, PA_BLD_TYPE, PA_INSR_YN, PA_ADM_DT, PA_HEIGHT, PA_WEIGHT)
+		VALUES(#{paNo}, #{paReg}, #{paName}, #{paSex}, #{paPh}, #{paAdd1}, #{paAdd2},
+		#{pzZip}, #{paBldType}, #{paInsrYn}, AMYN02, #{paHeight}, #{paWeight})
+	</insert>
+	
+</mapper>

@@ -1,0 +1,146 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+
+<style>
+.aside-nur-schedule{
+	width: 196px;
+	border-radius: 16px 0px 0px 16px;
+	background: var(--bg-02, #DBF2F4);
+	height: 56px;
+	border-right: 4px solid var(--ci-01, #0ABAB5);
+	margin-left: 4px;
+	color: var(--ci-01, #0ABAB5);
+}
+
+.dduk-body-border {
+	width: 90%;
+	height: 100%;
+}
+
+.filebox {
+	display: flex;
+	gap: 8px;
+}
+
+.filebox .upload-name {
+    border-radius: 8px;
+	border: 1px solid var(--border, #EBEFF0);
+	background: var(--bg-01, #F8F9FC);
+	padding-left: 16px;
+	font-family: 'Pretendard5';
+	font-size: 14px;
+	line-height: 160%; /* 22.4px */
+	height: 38px;
+	color: #8D9EA5;
+}
+
+.filebox label {
+    display: flex;
+	padding: 5px 12px;
+	align-items: center;
+	gap: 10px;
+	border-radius: 8px;
+	border: 0px solid var(--ci-01, #0ABAB5);
+	background: var(--ci-01, #0ABAB5) !important;
+	color: var(--white, #FFF);
+	font-family: 'Pretendard5';
+	font-style: normal;
+	line-height: 160%; /* 22.4px */
+	border: 0px;
+	height: 38px;
+}
+
+.filebox input[type="file"] {
+    position: absolute;
+    width: 0;
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+}
+</style>
+
+<div class="dduk-body-border">
+	<div class="dduk-title-area">
+		<h2>간호 근무 일정</h2>
+		<div class="filebox">
+			<form id="createNurSchedule" method="post" enctype="multipart/form-data">
+			    <input class="upload-name" id="excelUpload" value="첨부파일" placeholder="첨부파일">
+			    <label for="file" id="createNurScheduleBtn">일정등록</label> 
+			    <input type="file" id="file">
+			</form>
+		</div>
+	</div>
+	<div>
+		<table id="workforceTable">
+			<thead>
+				<tr></tr>
+			</thead>
+			<tbody id="workforceTbody">
+			</tbody>
+		</table>
+	</div>
+</div>
+
+
+<script src="/resources/fullcalendar-6.1.10/sweetalert2.min.js"></script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+$(document).ready(function() {
+	$('.aside-nur-schedule').find('svg').find('path').attr('fill', '#0ABAB5');
+	
+	 $('.dduk-nav-li').mouseleave(
+			function()	{
+				 $('.aside-nur-schedule').find('svg').find('path').attr('fill', '#0ABAB5');
+			}	
+		);
+	 
+	 $('.aside-nur-schedule').find('.dduk-nav-menu').css('color', '#0ABAB5');
+});
+
+$(document).on('click', '#createNurScheduleBtn', function(){
+	  const formData = new FormData();
+	    formData.append("file", $("#excelUpload")[0].files[0]);
+	    
+	    $.ajax({
+	      url: "/nurse/createNurSchedule",
+	      type: "post",
+	      contentType: false,
+	      processData: false,
+	      data: formData,
+	      beforeSend: function (xhr) {
+	        xhr.setRequestHeader("${_csrf.headerName}", "${_csrf.token}");
+	      },
+	      success: res => {
+	        if (res == "") {
+	        	
+	        	 Swal.fire({
+					   	title: '등록 실패',
+					   	text: '확장자가 .xlsx인 엑셀 파일을 첨부해주세요.',
+					   	icon: 'error',
+					   	confirmButtonColor: '#0ABAB5',
+					   	confirmButtonText: '확인',
+					})
+	          
+	        } else {
+	        	 Swal.fire({
+					   	title: '성공',
+					   	text: '정상적으로 추가되었습니다.',
+					   	icon: 'success',
+					   	confirmButtonColor: '#0ABAB5',
+					   	confirmButtonText: '확인',
+					})
+					
+	        }
+	      },
+	      error: xhr => {
+	        console.log(xhr);
+	        
+	      }
+	    })
+
+});
+</script>

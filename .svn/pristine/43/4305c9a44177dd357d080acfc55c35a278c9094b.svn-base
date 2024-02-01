@@ -1,0 +1,138 @@
+package kr.or.dduk.hrd.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.dduk.calendar.service.CalendarService;
+import kr.or.dduk.employee.service.EmployeeService;
+import kr.or.dduk.util.FileController;
+import kr.or.dduk.vo.AuthorityVO;
+import kr.or.dduk.vo.DocScheduleVO;
+import kr.or.dduk.vo.EmployeeVO;
+import kr.or.dduk.vo.PatientVO;
+import kr.or.dduk.vo.ProofApplicationVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RequestMapping("/hrd")
+@Controller
+public class HrdController {
+	
+	@Autowired
+	FileController fileController;
+	
+	@Autowired
+	EmployeeService	employeeService;
+	
+	/**
+	 * 전체 사원 목록
+	 * @param model
+	 * @return
+	 */
+	@GetMapping("/empList")
+	public String main(Model model) {
+		
+		List<EmployeeVO> empList = this.employeeService.getAllEmp();
+		log.info("main -> empList : " + empList);
+		
+		model.addAttribute("employeeVOList", empList);
+		
+		return "hrd/empList";
+	}
+	
+	/**
+	 * 비동기통신 방법으로 모든 사원 목록을 가져옴
+	 */
+	@ResponseBody
+	@GetMapping("/getEmpList")
+	public List<EmployeeVO> getEmpList() {
+		List<EmployeeVO> empVOList = this.employeeService.getAllEmp();
+		log.info("getEmpList -> empVOList : " + empVOList);
+		
+		return empVOList;
+	}
+	
+	/**
+	 * 비동기통신 방법으로 승인 관련 사원 목록을 가져옴
+	 */
+	@ResponseBody
+	@GetMapping("/getPermEmpList")
+	public List<EmployeeVO> getPermEmpList() {
+		List<EmployeeVO> empVOList = this.employeeService.getPermEmpList();
+		log.info("getPermEmpList -> empVOList : " + empVOList);
+		
+		return empVOList;
+	}
+	
+	/**
+	 * 계정 조회
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/detail")
+	public EmployeeVO detail(@RequestParam("empNo") String empNo) {
+		log.info("hrd-detail -> empNo : " + empNo);
+		EmployeeVO employeeVO = this.employeeService.getHrdDetail(empNo);
+		log.info("hrd-detail -> employeeVO : " + employeeVO);
+		
+		return employeeVO;
+	}
+	
+	/**
+	 * 인사과 사원 정보 수정
+	 * @param EmployeeVO
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/update")
+	public Map<String, Object> update(@ModelAttribute EmployeeVO employeeVO) {
+		// 파일 로컬+DB 저장, 파일코드 얻어오고 설정
+		Map<String, Object> map = this.fileController.uploadFile(employeeVO.getUploadFile(), "empProfile");
+		int result = (Integer)map.get("result"); // db에 insert 성공한 개수
+		log.info("result: " + result);
+		log.info("map" + map);
+		String atchFileCd = (String)map.get("atchFileCd"); // 파일코드
+		employeeVO.setAtchFileCd(atchFileCd);
+		
+		// 비밀번호 보안화 인코딩
+		String rawPw = employeeVO.getEmpPw();
+		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+		String encodedPassword = encoder.encode(rawPw);
+		employeeVO.setEmpPw(encodedPassword);
+		log.info("update -> employeeVO : " + employeeVO);
+		
+		// EmployeeVO DB 수정
+		int res = this.employeeService.update(employeeVO);
+		log.info("update -> res : " + res);
+		
+		Map<String, Object> resMap = new HashMap<String, Object>();
+		if(res > 0) { // 수정 성공
+			resMap.put("result", "success");
+			return resMap;
+		}else { 	// 수정 실패
+			return null;
+		}
+	}
+	
+	/**
+	 * 진료실 배정 페이지
+	 * @param model
+	 * @return
+	 */
+	@GetMapping("/assignClinicRoom")
+	public String assignClinicRoom(Model model) {
+		return "hrd/assignClinicRoom";
+	}
+}

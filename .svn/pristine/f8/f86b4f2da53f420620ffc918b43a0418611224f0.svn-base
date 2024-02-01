@@ -1,0 +1,17 @@
+package kr.or.dduk.nurse.service;
+
+import java.util.List;
+
+import kr.or.dduk.vo.PatientVO;
+import kr.or.dduk.vo.TestOrderVO;
+
+public interface NurseTestService {
+
+	// 검사 대기 환자 목록 가져오기
+	public List<PatientVO> getTestPatList();
+
+	// 목록에서 선택한 환자 정보 가져오기
+	public PatientVO getTestPatDetail(String clinicNo);
+
+	public int updateTestOrder(TestOrderVO testOrderVO);
+}

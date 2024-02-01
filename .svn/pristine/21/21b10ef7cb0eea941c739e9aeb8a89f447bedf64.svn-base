@@ -1,0 +1,36 @@
+package kr.or.dduk.ams.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import com.google.gson.Gson;
+
+import kr.or.dduk.nurse.service.MedicineManagementService;
+import kr.or.dduk.vo.PurchaseMedicineDetailVO;
+
+@Controller
+public class StatisticsController {
+	@Autowired
+	MedicineManagementService medicineManagementService;
+	
+	@GetMapping("/test")
+	public String test(Model model) {
+		Gson gson = new Gson();
+		
+		List<PurchaseMedicineDetailVO> purchaseMedicineDetailVOList = medicineManagementService.getAllPurchasedMedicine();
+		String purchaseMedicineDetailVOListStr = gson.toJson(purchaseMedicineDetailVOList);
+		
+		model.addAttribute("purchaseMedicineDetailVOList", purchaseMedicineDetailVOListStr);
+		
+		return "ams/test";
+	}
+	
+	@GetMapping("/dyStatistics")
+	public String dyStatistics() {
+		return "ams/dyStatistics";
+	}
+}

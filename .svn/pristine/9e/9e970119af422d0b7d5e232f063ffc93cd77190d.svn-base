@@ -1,0 +1,15 @@
+package kr.or.dduk.mapper;
+
+import java.util.List;
+
+import kr.or.dduk.vo.ReservationVO;
+
+public interface ReservationMapper {
+
+	public List<ReservationVO> getTodayReservation();
+
+	public List<ReservationVO> getReservationUntilToday();
+
+	public int createReservation(ReservationVO reservationVO);
+
+}

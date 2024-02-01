@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.dduk.mapper.AdmissionMapper">
+
+	<!-- 입원대기환자 조회 -->
+	<select id="selectAdmissionList" resultType="patientVO">
+		SELECT 
+			PA_NO,
+			PA_REG, 
+			PA_NAME, 
+			PA_SEX, 
+			PA_PH, 
+			PA_ADD1, 
+			PA_ADD2, 
+			PZ_ZIP, 
+			PA_NOKNM, 
+			PA_NOKPH, 
+			PA_BLD_TYPE, 
+			PA_INSR_YN, 
+			PA_ADM_DT, 
+			PA_HEIGHT, 
+			PA_WEIGHT
+		FROM 
+			PATIENT
+		WHERE 
+			PA_ADM_DT IS NOT NULL
+  		AND 
+  			PA_ADM_DT = 'AMYN03'
+	</select>
+	
+	<!-- 퇴원대기환자 조회 -->
+	<select id="selectDischargeList" resultType="patientVO">
+		SELECT 
+			PA_NO,
+			PA_REG, 
+			PA_NAME, 
+			PA_SEX, 
+			PA_PH, 
+			PA_ADD1, 
+			PA_ADD2, 
+			PZ_ZIP, 
+			PA_NOKNM, 
+			PA_NOKPH, 
+			PA_BLD_TYPE, 
+			PA_INSR_YN, 
+			PA_ADM_DT, 
+			PA_HEIGHT, 
+			PA_WEIGHT
+		FROM 
+			PATIENT
+		WHERE 
+			PA_ADM_DT IS NOT NULL
+  		AND 
+  			PA_ADM_DT = 'AMYN04'
+	</select>
+	
+</mapper>

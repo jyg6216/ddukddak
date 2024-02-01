@@ -1,0 +1,172 @@
+package kr.or.dduk.calendar.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.dduk.calendar.service.CalendarService;
+import kr.or.dduk.employee.service.EmployeeService;
+import kr.or.dduk.mapper.EmployeeMapper;
+import kr.or.dduk.util.SessionInfo;
+import kr.or.dduk.vo.AuthorityVO;
+import kr.or.dduk.vo.DocScheduleVO;
+import kr.or.dduk.vo.EmployeeVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RequestMapping("/calendar")
+@Controller
+public class CalendarController {
+	
+	@Autowired
+	SessionInfo sessionInfo;
+	
+	@Autowired
+	CalendarService calendarService;
+	
+	@Autowired
+	EmployeeService employeeService;
+	
+	/**
+	 * 캘린더에 로그인 정보
+	 * @param model
+	 * @return
+	 */
+	@GetMapping("/sch")
+    public String baseCalendar(Model model) {
+		
+        return "calendar/fullcalendar";
+    }
+	
+	/**
+	 * 새 일정 추가
+	 * @param docScheduleVO
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/createSch")
+	public Map<String, Object> createSch(@RequestBody DocScheduleVO docScheduleVO) {
+		log.info("createSc -> docScheduleVO : " + docScheduleVO);
+		
+		int res = this.calendarService.createSch(docScheduleVO);
+		log.info("createSc -> res : " + res);
+
+		Map<String, Object> map = new HashMap<String, Object>();
+		if(res > 0) { // 등록 성공
+			map.put("result", "success");
+			return map;
+		}else { 	// 실패
+			return null;
+		}
+	}
+	
+	/**
+	 * 일정 번호로 저장된 일정 삭제
+	 * @param dsNo
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/deleteSch")
+	public Map<String, Object> deleteSch(@RequestParam("dsNo") String dsNo) {
+		log.info("deleteSch -> docScheduleVO : " + dsNo);
+		
+		int res = this.calendarService.deleteSch(dsNo);
+		log.info("deleteSch -> res : " + res);
+		
+		Map<String, Object> map = new HashMap<String, Object>();
+		if(res > 0) { // 삭제 성공
+			map.put("result", "success");
+			return map;
+		}else { 	// 삭제 실패
+			return null;
+		}
+	}
+	
+	/**
+	 * 풀캘린더에 표시할 DB 내 일정정보 리스트로 가져오기
+	 * @param year
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/schList")
+	public List<DocScheduleVO> schList(@RequestParam("year") String year){
+		log.info("selectSch -> year : " + year);
+		
+		// jsp에서 가져온 현재 해 맵에 담기
+		Map<String,Object> map = new HashMap<String,Object>();
+		map.put("year", year);		// 현재 해
+		log.info("list -> map : " + map);
+		// 현재 해 
+		List<DocScheduleVO> data = this.calendarService.schList(map);
+		log.info("list -> data :" + data);
+		
+		return data;
+	}
+	
+	/**
+	 * 일정 번호로 해당 일정 상세 정보 가져오기
+	 * @param dsNo
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/selectSch")
+	public DocScheduleVO selectSch(@RequestParam("dsNo") String dsNo) {
+		log.info("selectSch -> dsNo : " + dsNo);
+		
+		DocScheduleVO slctdSch = this.calendarService.selectSch(dsNo);
+		log.info("selectSch -> slctdSch : " + slctdSch);
+		
+		return slctdSch;
+	}
+	
+	/**
+	 * 일정 번호로 일정 찾아서 수정 - empNo 제외
+	 * @param docScheduleVO
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/updateSch")
+	public Map<String, Object> updateSch(@RequestBody DocScheduleVO docScheduleVO) {
+		log.info("updateSch -> docScheduleVO : " + docScheduleVO );
+		
+		int res = this.calendarService.updateSch(docScheduleVO);
+		log.info("updateSch -> res : " + res);
+		Map<String, Object> map = new HashMap<String, Object>();
+		
+		if(res > 0) { // 수정 성공
+			map.put("result", "success");
+			return map;
+		}else { 	// 수정 실패
+			return null;
+		}
+	}
+	
+	/**
+	 * 로그인한 계정 권한 조회
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/authCheck")
+	public AuthorityVO authCheck(@RequestParam("empNo") String empNo) {
+		log.info("authCheck -> empNo : " + empNo);
+		// 로그인한 계정의 권한 포함한 정보 확인
+		EmployeeVO selectedEmp = this.employeeService.authCheck(empNo);
+		log.info("authCheck -> selectedEmp : " + selectedEmp);
+		// 권한 정보만 빼오기
+		AuthorityVO authorityVO = selectedEmp.getAuthorityVOList().get(0);
+		log.info("authCheck -> authorityVO : " + authorityVO);
+		
+		return authorityVO;
+	}
+}

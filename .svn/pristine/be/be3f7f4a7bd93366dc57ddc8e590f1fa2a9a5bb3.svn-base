@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.dduk.mapper.AdmissionMapper">
+
+	<!-- 환자정보 resultMap -->
+	<resultMap type="patientVO" id="patientMap">
+		<result property="paNo" column="PA_NO"/>
+		<result property="paReg" column="PA_REG"/>
+		<result property="paName" column="PA_NAME"/>
+		<result property="paSex" column="PA_SEX"/>
+		<result property="paPh" column="PA_PH"/>
+		<result property="paAdd1" column="PA_ADD1"/>
+		<result property="paAdd2" column="PA_ADD2"/>
+		<result property="pzZip" column="PZ_ZIP"/>
+		<result property="paNoknm" column="PA_NOKNM"/>
+		<result property="paNokph" column="PA_NOKPH"/>
+		<result property="paBldType" column="PA_BLD_TYPE"/>
+		<result property="paInsrYn" column="PA_INSR_YN"/>
+		<result property="paAdmDt" column="PA_ADM_DT"/>
+		<result property="paHeight" column="PA_HEIGHT"/>
+		<result property="paWeight" column="PA_WEIGHT"/>
+		
+		<collection property="clinicChartVOList" resultMap="clinicChartMap"></collection>
+	</resultMap>
+	
+	<!-- 진료,회진차트 resultMap -->
+	<resultMap type="clinicChartVO" id="clinicChartMap">
+		<result property="clinicNo" column="CLINIC_NO" />
+		<result property="clinicDt" column="CLINIC_DT" />
+		<result property="clinicOpinion" column="CLINIC_OPINION" />
+		<result property="hsrpNo" column="HSRP_NO" />
+		<result property="empNo" column="EMP_NO" />
+		<result property="paNo" column="PA_NO" />
+		<result property="clinicInjnm" column="CLINIC_INJNM" />
+		<result property="admiCd" column="ADMI_CD" />
+		<result property="clinicState" column="CLINIC_STATE" />
+		<result property="empName" column="EMP_NAME" />
+	</resultMap>
+	
+	<!-- 입원대기환자 조회 -->
+	<select id="selectAdmissionList" resultMap="patientMap">
+		SELECT 
+	        P.PA_NO,
+	        P.PA_REG, 
+	        P.PA_NAME, 
+	        P.PA_SEX, 
+	        P.PA_PH, 
+	        P.PA_ADD1, 
+	        P.PA_ADD2, 
+	        P.PZ_ZIP, 
+	        P.PA_NOKNM, 
+	        P.PA_NOKPH, 
+	        P.PA_BLD_TYPE, 
+	        P.PA_INSR_YN, 
+	        P.PA_ADM_DT, 
+	        P.PA_HEIGHT, 
+	        P.PA_WEIGHT,
+	        C.CLINIC_OPINION
+    	FROM 
+        	PATIENT P
+	    LEFT JOIN 
+	        CLINIC_CHART C ON P.PA_NO = C.PA_NO
+	    WHERE 
+	        P.PA_ADM_DT IS NOT NULL
+	    AND 
+	        P.PA_ADM_DT = 'AMYN03'
+	</select>
+	
+	<!-- 퇴원대기환자 조회 -->
+	<select id="selectDischargeList" resultType="patientVO">
+		SELECT 
+			PA_NO,
+			PA_REG, 
+			PA_NAME, 
+			PA_SEX, 
+			PA_PH, 
+			PA_ADD1, 
+			PA_ADD2, 
+			PZ_ZIP, 
+			PA_NOKNM, 
+			PA_NOKPH, 
+			PA_BLD_TYPE, 
+			PA_INSR_YN, 
+			PA_ADM_DT, 
+			PA_HEIGHT, 
+			PA_WEIGHT
+		FROM 
+			PATIENT
+		WHERE 
+			PA_ADM_DT IS NOT NULL
+  		AND 
+  			PA_ADM_DT = 'AMYN04'
+	</select>
+	
+	<!-- 클릭 시 환자 상세정보 조회 -->
+	<select id="getPatientDetail" parameterType="String" resultType="patientVO">
+		SELECT 
+		    PA_NO, 
+		    PA_REG, 
+		    PA_NAME, 
+		    PA_SEX, 
+		    PA_PH, 
+		    PA_ADD1, 
+		    PA_ADD2, 
+		    PZ_ZIP, 
+		    PA_NOKNM, 
+		    PA_NOKPH, 
+		    PA_BLD_TYPE, 
+		    PA_INSR_YN, 
+		    PA_ADM_DT, 
+		    PA_HEIGHT, 
+		    PA_WEIGHT
+		FROM 
+		    PATIENT
+		WHERE 
+		    PA_NO = #{paNo}
+	</select>
+	
+	<!-- 의사소견 가져오기 -->
+	<select id="getClinicOpinion" resultMap="patientMap">
+		SELECT 
+			A.PA_NO, 
+			A.PA_NAME, 
+			B.CLINIC_OPINION
+		FROM 
+			PATIENT A
+		JOIN 
+			CLINIC_CHART B ON A.PA_NO = B.PA_NO
+	</select>
+</mapper>

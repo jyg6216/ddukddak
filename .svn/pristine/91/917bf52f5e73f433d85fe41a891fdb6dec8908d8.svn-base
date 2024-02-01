@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.dduk.mapper.OrderSetMapper">
+	
+	<select id="getOrderSetList" resultType="orderSetVO">
+		SELECT * FROM ORDER_SET
+		WHERE EMP_NO = #{empNo}
+	</select>
+	
+	<select id="getInjuryVOList" resultType="injuryVO">
+		SELECT * FROM INJURY
+	</select>
+	
+	<select id="getTestVOList" resultType="testVO">
+		SELECT * FROM TEST
+	</select>
+	
+	<select id="getMedicineVOList" resultType="medicineVO">
+		SELECT * FROM MEDICINE
+	</select>
+	
+	<select id="getTreatmentVOList" resultType="treatmentVO">
+		SELECT * FROM TREATMENT
+	</select>
+	
+</mapper>

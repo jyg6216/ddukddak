@@ -1,0 +1,260 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="/resources/js/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="resources/css/jquery-ui.css">
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+<script src="/resources/script/jquery.mtz.monthpicker.js"></script>
+<title>통계</title>
+<style>
+canvas{
+	width: 600px;
+	height: 500px;
+}
+</style>
+</head>
+<body>
+	<div>
+		<canvas id="myChart1"></canvas>
+		<input type="button" value="발주된 약품 통계" id="order-btn"/>
+		<input type="button" value="반려된 약품 통계" id="ajax-btn"/>
+		<input type="button" value="몬뜨피커" id="month-picker-btn"/>
+	</div>
+	
+	<div>
+		<canvas id="myChart2"></canvas>
+	</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	purchaseMedicineStastics();
+});
+
+//1번 차트(발주 관련 통계) 그리기
+function purchaseMedicineStastics(){
+	// 차트에 쓸 데이터를 컨트롤러에서 받아와 저장할 변수 
+	var data = {};
+	// 수량 배열
+	var qtyArray = [];
+	// 라벨 배열
+	var labelArray = [];
+	// 캔버스 변수에 넣기
+	const ctx1 = document.getElementById('myChart1');
+	// 차트 데이터를 담는 변수
+	var chartData = {
+		labels: labelArray,
+	    datasets: [{
+	        data: qtyArray,
+	        backgroundColor: [
+                   'rgba(255, 99, 132, 1)',
+                   'rgba(54, 162, 235, 1)',
+                   'rgba(255, 206, 86, 1)',
+                   'rgba(75, 192, 192, 1)',
+                   'rgba(153, 102, 255, 1)',
+                   'rgba(255, 159, 64, 1)',
+                   'rgba(201, 203, 207, 1)'
+	        ],
+		}]
+	};
+	
+	// 1번 차트 깡통
+	var myChart1 = new Chart(ctx1, {
+		type : 'bar',
+		data : {
+			datasets : [ {
+				borderWidth : 1,
+				backgroundColor: [
+	                'rgba(255, 99, 132, 0.5)',
+	                'rgba(54, 162, 235, 0.5)',
+	                'rgba(255, 206, 86, 0.5)',
+	                'rgba(75, 192, 192, 0.5)',
+	                'rgba(153, 102, 255, 0.5)',
+	                'rgba(255, 159, 64, 0.5)']
+			} ]
+		},
+		options : {
+			plugins:{
+	            legend: {
+	                position : top
+	            },
+	            title: {
+	            	display: true,
+	            	text : '발주된 약품 통계'
+	            }
+	        }
+		}
+	});
+	
+	// 컨트롤러에서 받은 데이터를 자바스크립트 변수에 넣기
+	function getPurchaseMedicineDetailData(){
+		data = ${purchaseMedicineDetailVOList}
+		console.log('서버에서 가져온 발주해서 최종승인된 약품의 합계 리스트 : ',data);
+	}
+	
+	// 변수에 들어간 데이터를 초기화해둔 배열에 넣기
+	function pushDataIntoArray(){
+		var keys = Object.keys(data);
+		var values = Object.values(data);
+		
+		// 이전 데이터가 쌓이지 않게 초기화
+		qtyArray = [];
+		labelArray = [];
+		
+		values.forEach(function(obj) {
+			// 라벨과 데이터 배열에 데이터 넣기
+			qtyArray.push(obj.prmeQt);
+		    labelArray.push(obj.mediNm);
+		});
+		
+		console.log("수량 배열 : ",qtyArray);
+		console.log("이름 배열 : ",labelArray);
+	}
+	
+	// 깡통 차트에 차트를 새로 그리기
+	function redrawChart(chartType, title){
+		console.log("입력된 차트 타입 : ",chartType);
+	    if(myChart1){
+			myChart1.destroy();
+		}
+	    
+	    // 차트 데이터 변수의 라벨과 데이터에 값 넣기
+	    chartData.labels = labelArray;
+	    chartData.datasets[0].data = qtyArray;
+	
+		const config = {
+				type: chartType,
+			    data: chartData,
+			    options : {
+		    	responsive : true,
+			    	plugins:{
+			            legend: {
+			                display: false
+			            },
+			            title: {
+			            	display: true,
+			            	text : title
+			            }
+			        }
+			    }
+			};
+		console.log("차트 데이터", chartData);
+		
+		myChart1 = new Chart(ctx1, config);
+	}
+	
+	// 발주한 약품 통계 그려주기
+	function drawPurchaseMedicineStastics(){
+		// 컨트롤러에서 받은 데이터(모든 발주 정보)를 자바스크립트 변수에 넣기
+		getPurchaseMedicineDetailData();
+		// 변수에 들어간 데이터를 필요한 모양으로 바꿔주기
+		pushDataIntoArray();
+		// 깡통 차트에 데이터를 직접 넣어주기
+		redrawChart('bar', '발주된 약품 통계');
+	}
+	
+	
+	//버튼을 담은 변수
+	var ajaxBtn = document.getElementById('ajax-btn');
+	// 반려된 약품 통계 실행
+	ajaxBtn.addEventListener('click',function(){
+		getDeniedPurchaseMedicine();
+	});
+	
+	// 결재상태가 PMST04인 데이터만 필터링하기
+	function filterDataByApprovalState(){
+		var keys = Object.keys(data);
+		var values = Object.values(data);
+		
+		// 이전 데이터가 쌓이지 않게 초기화
+		qtyArray = [];
+		labelArray = [];
+		
+		values.forEach(function(obj) {
+			// 승인상태가 PMST04(반려)인 데이터만 라벨과 데이터 배열에 데이터 넣기
+			if(obj.prmeAtrlStat == 'PMST04'){
+				qtyArray.push(obj.prmeQt);
+			    labelArray.push(obj.mediNm);
+			}
+		});
+	}
+	
+	// 반려된 발주 통계 보기
+	function getDeniedPurchaseMedicine(){
+		filterDataByApprovalState();
+		
+		redrawChart('bar', '반려된 발주 통계');
+	}
+	
+	//버튼을 담은 변수
+	var orderBtn = document.getElementById('order-btn');
+	// 반려된 약품 통계
+	orderBtn.addEventListener('click',function(){
+		drawPurchaseMedicineStastics();
+	});
+	
+	drawPurchaseMedicineStastics();
+}
+
+
+
+
+
+// 2번 차트
+const ctx2 = document.getElementById('myChart2');
+
+const config = {
+		type: 'doughnut',
+		data: {
+			labels : [ 'Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange' ],
+			datasets : [ {
+				label : '약품 발주량',
+				data : [ 12, 19, 3, 5, 2, 3 ],
+				borderWidth : 1,
+				backgroundColor: [
+	                'rgba(54, 162, 235, 0.5)',
+	                'rgba(255, 206, 86, 0.5)',
+	                'rgba(255, 99, 132, 0.5)',
+	                'rgba(75, 192, 192, 0.5)',
+	                'rgba(153, 102, 255, 0.5)',
+	                'rgba(255, 159, 64, 0.5)'],
+		  } ],
+			options: {
+		    responsive: true,
+		    plugins: {
+		      legend: {
+		        position: 'top',
+		      },
+		      title: {
+		        display: true,
+		        text: 'Chart.js Doughnut Chart'
+      			}
+	    	}
+	  	},
+	}
+}
+
+var myChart2 = new Chart(ctx2, config);
+
+
+
+
+
+//Month-Picker
+$(document).on('click', '#month-picker-btn', function(){
+	$("#month-picker-btn").monthpicker({
+		pattern: 'yyyy-mm',
+		monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+		selectedYear: 2024,
+		startYear : 1990,
+		finalYear : 2100,
+		openOnFocus : true
+	});
+	
+	$("#month-picker-btn").monthpicker('show');
+});
+</script>
+</body>
+</html>

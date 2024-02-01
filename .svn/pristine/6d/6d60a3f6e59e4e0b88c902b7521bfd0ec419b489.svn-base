@@ -1,0 +1,10 @@
+package kr.or.dduk.comcode.service;
+
+import java.util.List;
+
+import kr.or.dduk.vo.ComDetailCodeInfoVO;
+
+public interface ComCodeService {
+	// 직책 조회
+	public List<ComDetailCodeInfoVO> getComDetailCodeInfo(String empDeptCd);
+}
