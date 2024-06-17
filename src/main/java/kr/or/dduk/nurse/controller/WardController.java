@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 병동관리 컨트롤러
- * @author dpfvl
+ * @author 202306_JYG2
  */
 @Slf4j
 @Controller
